@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediSafe SQLite - Test Definitivo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    .test-section {
+      border: 2px solid #28a745;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      background-color: #f8f9fa;
+    }
+    .debug-log {
+      background-color: #000;
+      color: #00ff00;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .status-connected { background-color: #28a745; }
+    .status-disconnected { background-color: #dc3545; }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-database me-2"></i>MediSafe SQLite - Test Definitivo
+    </h1>
+    
+    <!-- Estado de conexión -->
+    <div class="test-section">
+      <h3>
+        <span id="connection-status" class="status-indicator status-disconnected"></span>
+        Estado de Conexión
+      </h3>
+      <div id="connection-info">
+        <p><strong>Servidor SQLite:</strong> <span id="server-status">Verificando...</span></p>
+        <p><strong>Usuario:</strong> <span id="user-status">No autenticado</span></p>
+        <p><strong>Token:</strong> <span id="token-status">No disponible</span></p>
+      </div>
+    </div>
+    
+    <!-- Autenticación -->
+    <div class="test-section">
+      <h3><i class="bi bi-person-circle me-2"></i>Autenticación</h3>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Registro</h5>
+          <form id="register-form">
+            <div class="mb-3">
+              <label for="reg-username" class="form-label">Usuario</label>
+              <input type="text" class="form-control" id="reg-username" required>
+            </div>
+            <div class="mb-3">
+              <label for="reg-password" class="form-label">Contraseña</label>
+              <input type="password" class="form-control" id="reg-password" required>
+            </div>
+            <div class="mb-3">
+              <label for="reg-email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="reg-email" required>
+            </div>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-person-plus me-2"></i>Registrar
+            </button>
+          </form>
+        </div>
+        
+        <div class="col-md-6">
+          <h5>Inicio de Sesión</h5>
+          <form id="login-form">
+            <div class="mb-3">
+              <label for="login-username" class="form-label">Usuario</label>
+              <input type="text" class="form-control" id="login-username" required>
+            </div>
+            <div class="mb-3">
+              <label for="login-password" class="form-label">Contraseña</label>
+              <input type="password" class="form-control" id="login-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+            </button>
+          </form>
+          
+          <button id="logout-btn" class="btn btn-warning mt-3">
+            <i class="bi bi-box-arrow-left me-2"></i>Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Medicamentos -->
+    <div class="test-section">
+      <h3><i class="bi bi-capsule me-2"></i>Medicamentos</h3>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Agregar Medicamento</h5>
+          <form id="medication-form">
+            <div class="mb-3">
+              <label for="med-name" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="med-name" required>
+            </div>
+            <div class="mb-3">
+              <label for="med-dose" class="form-label">Dosis</label>
+              <input type="text" class="form-control" id="med-dose" required>
+            </div>
+            <div class="mb-3">
+              <label for="med-freq" class="form-label">Frecuencia</label>
+              <input type="text" class="form-control" id="med-freq" required>
+            </div>
+            <div class="mb-3">
+              <label for="med-time" class="form-label">Horario</label>
+              <input type="time" class="form-control" id="med-time" required>
+            </div>
+            <div class="mb-3">
+              <label for="med-expiry" class="form-label">Fecha de caducidad</label>
+              <input type="date" class="form-control" id="med-expiry" required>
+            </div>
+            <div class="mb-3">
+              <label for="med-notes" class="form-label">Notas</label>
+              <textarea class="form-control" id="med-notes" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-plus-circle me-2"></i>Guardar Medicamento
+            </button>
+          </form>
+        </div>
+        
+        <div class="col-md-6">
+          <h5>Acciones</h5>
+          <button id="load-medications-btn" class="btn btn-info mb-2">
+            <i class="bi bi-list me-2"></i>Cargar Medicamentos
+          </button>
+          <button id="clear-medications-btn" class="btn btn-danger mb-2">
+            <i class="bi bi-trash me-2"></i>Limpiar Lista
+          </button>
+          <button id="test-medication-btn" class="btn btn-warning mb-2">
+            <i class="bi bi-flask me-2"></i>Test Medicamento
+          </button>
+        </div>
+      </div>
+      
+      <div id="medications-list" class="mt-3">
+        <h6>Medicamentos Registrados:</h6>
+        <div id="medications-display">No hay medicamentos cargados</div>
+      </div>
+    </div>
+    
+    <!-- Recordatorios -->
+    <div class="test-section">
+      <h3><i class="bi bi-bell me-2"></i>Recordatorios</h3>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Agregar Recordatorio</h5>
+          <form id="reminder-form">
+            <div class="mb-3">
+              <label for="reminder-title" class="form-label">Título</label>
+              <input type="text" class="form-control" id="reminder-title" required>
+            </div>
+            <div class="mb-3">
+              <label for="reminder-description" class="form-label">Descripción</label>
+              <textarea class="form-control" id="reminder-description" rows="2" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="reminder-date" class="form-label">Fecha</label>
+              <input type="date" class="form-control" id="reminder-date" required>
+            </div>
+            <div class="mb-3">
+              <label for="reminder-time" class="form-label">Hora</label>
+              <input type="time" class="form-control" id="reminder-time" required>
+            </div>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-plus-circle me-2"></i>Guardar Recordatorio
+            </button>
+          </form>
+        </div>
+        
+        <div class="col-md-6">
+          <h5>Acciones</h5>
+          <button id="load-reminders-btn" class="btn btn-info mb-2">
+            <i class="bi bi-list me-2"></i>Cargar Recordatorios
+          </button>
+          <button id="test-reminder-btn" class="btn btn-warning mb-2">
+            <i class="bi bi-bell me-2"></i>Test Recordatorio
+          </button>
+        </div>
+      </div>
+      
+      <div id="reminders-list" class="mt-3">
+        <h6>Recordatorios Registrados:</h6>
+        <div id="reminders-display">No hay recordatorios cargados</div>
+      </div>
+    </div>
+    
+    <!-- Metas -->
+    <div class="test-section">
+      <h3><i class="bi bi-target me-2"></i>Metas</h3>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Agregar Meta</h5>
+          <form id="goal-form">
+            <div class="mb-3">
+              <label for="goal-title" class="form-label">Título</label>
+              <input type="text" class="form-control" id="goal-title" required>
+            </div>
+            <div class="mb-3">
+              <label for="goal-description" class="form-label">Descripción</label>
+              <textarea class="form-control" id="goal-description" rows="2" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="goal-target-date" class="form-label">Fecha Objetivo</label>
+              <input type="date" class="form-control" id="goal-target-date" required>
+            </div>
+            <div class="mb-3">
+              <label for="goal-priority" class="form-label">Prioridad</label>
+              <select class="form-control" id="goal-priority" required>
+                <option value="baja">Baja</option>
+                <option value="media">Media</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-plus-circle me-2"></i>Guardar Meta
+            </button>
+          </form>
+        </div>
+        
+        <div class="col-md-6">
+          <h5>Acciones</h5>
+          <button id="load-goals-btn" class="btn btn-info mb-2">
+            <i class="bi bi-list me-2"></i>Cargar Metas
+          </button>
+          <button id="test-goal-btn" class="btn btn-warning mb-2">
+            <i class="bi bi-target me-2"></i>Test Meta
+          </button>
+        </div>
+      </div>
+      
+      <div id="goals-list" class="mt-3">
+        <h6>Metas Registradas:</h6>
+        <div id="goals-display">No hay metas cargadas</div>
+      </div>
+    </div>
+    
+    <!-- Debug Console -->
+    <div class="test-section">
+      <h3><i class="bi bi-bug me-2"></i>Debug Console</h3>
+      <div id="debug-output" class="debug-log">
+        Iniciando debug...
+      </div>
+      <button id="clear-debug-btn" class="btn btn-secondary mt-2">
+        <i class="bi bi-trash me-2"></i>Limpiar Debug
+      </button>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- SQLite Script -->
+  <script src="script-sqlite-definitive.js"></script>
+  
+  <script>
+    // Función de debug
+    function debugLog(message) {
+      const debugOutput = document.getElementById('debug-output');
+      const timestamp = new Date().toLocaleTimeString();
+      debugOutput.innerHTML += `[${timestamp}] ${message}\n`;
+      debugOutput.scrollTop = debugOutput.scrollHeight;
+      console.log(message);
+    }
+    
+    // Actualizar estado de conexión
+    function updateConnectionStatus(isConnected) {
+      const statusIndicator = document.getElementById('connection-status');
+      const serverStatus = document.getElementById('server-status');
+      
+      if (isConnected) {
+        statusIndicator.className = 'status-indicator status-connected';
+        serverStatus.textContent = 'Conectado';
+      } else {
+        statusIndicator.className = 'status-indicator status-disconnected';
+        serverStatus.textContent = 'Desconectado';
+      }
+    }
+    
+    // Actualizar estado del usuario
+    function updateUserStatus() {
+      const userStatus = document.getElementById('user-status');
+      const tokenStatus = document.getElementById('token-status');
+      const currentUser = window.MediSafeSQLite.getCurrentUser();
+      const token = localStorage.getItem('token');
+      
+      if (currentUser) {
+        userStatus.textContent = `${currentUser.username} (${currentUser.email})`;
+      } else {
+        userStatus.textContent = 'No autenticado';
+      }
+      
+      if (token) {
+        tokenStatus.textContent = 'Disponible';
+      } else {
+        tokenStatus.textContent = 'No disponible';
+      }
+    }
+    
+    // Mostrar medicamentos
+    function displayMedications(medications) {
+      const display = document.getElementById('medications-display');
+      
+      if (medications.length === 0) {
+        display.innerHTML = '<p class="text-muted">No hay medicamentos registrados.</p>';
+        return;
+      }
+      
+      let html = '<div class="list-group">';
+      medications.forEach(med => {
+        html += `
+          <div class="list-group-item">
+            <h6 class="mb-1">${med.name}</h6>
+            <p class="mb-1">Dosis: ${med.dose} | Frecuencia: ${med.freq} | Hora: ${med.time}</p>
+            <small class="text-muted">Caducidad: ${med.expiry} | ID: ${med.id}</small>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      display.innerHTML = html;
+    }
+    
+    // Mostrar recordatorios
+    function displayReminders(reminders) {
+      const display = document.getElementById('reminders-display');
+      
+      if (reminders.length === 0) {
+        display.innerHTML = '<p class="text-muted">No hay recordatorios registrados.</p>';
+        return;
+      }
+      
+      let html = '<div class="list-group">';
+      reminders.forEach(reminder => {
+        html += `
+          <div class="list-group-item">
+            <h6 class="mb-1">${reminder.title}</h6>
+            <p class="mb-1">${reminder.description}</p>
+            <small class="text-muted">Fecha: ${reminder.date} ${reminder.time} | ID: ${reminder.id}</small>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      display.innerHTML = html;
+    }
+    
+    // Mostrar metas
+    function displayGoals(goals) {
+      const display = document.getElementById('goals-display');
+      
+      if (goals.length === 0) {
+        display.innerHTML = '<p class="text-muted">No hay metas registradas.</p>';
+        return;
+      }
+      
+      let html = '<div class="list-group">';
+      goals.forEach(goal => {
+        html += `
+          <div class="list-group-item">
+            <h6 class="mb-1">${goal.title}</h6>
+            <p class="mb-1">${goal.description}</p>
+            <small class="text-muted">Objetivo: ${goal.target_date} | Prioridad: ${goal.priority} | ID: ${goal.id}</small>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      display.innerHTML = html;
+    }
+    
+    // Configurar event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('🚀 Configurando event listeners...');
+      
+      // Verificar conexión inicial
+      window.MediSafeSQLite.checkServerConnection().then(isConnected => {
+        updateConnectionStatus(isConnected);
+        if (isConnected) {
+          debugLog('✅ Conexión establecida con SQLite');
+        } else {
+          debugLog('❌ No se pudo conectar con SQLite');
+        }
+      });
+      
+      // Actualizar estado del usuario
+      updateUserStatus();
+      
+      // Formulario de registro
+      document.getElementById('register-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        debugLog('📝 Procesando registro...');
+        
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+        const email = document.getElementById('reg-email').value;
+        
+        const success = await window.MediSafeSQLite.registerUser(username, password, email);
+        if (success) {
+          updateUserStatus();
+          this.reset();
+        }
+      });
+      
+      // Formulario de login
+      document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        debugLog('🔐 Procesando login...');
+        
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        
+        const success = await window.MediSafeSQLite.loginUser(username, password);
+        if (success) {
+          updateUserStatus();
+          this.reset();
+        }
+      });
+      
+      // Botón de logout
+      document.getElementById('logout-btn').addEventListener('click', function() {
+        debugLog('👋 Cerrando sesión...');
+        window.MediSafeSQLite.logoutUser();
+      });
+      
+      // Formulario de medicamentos
+      document.getElementById('medication-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        debugLog('💊 Guardando medicamento...');
+        
+        const medication = {
+          name: document.getElementById('med-name').value,
+          dose: document.getElementById('med-dose').value,
+          freq: document.getElementById('med-freq').value,
+          time: document.getElementById('med-time').value,
+          expiry: document.getElementById('med-expiry').value,
+          notes: document.getElementById('med-notes').value
+        };
+        
+        const success = await window.MediSafeSQLite.saveMedication(medication);
+        if (success) {
+          this.reset();
+          // Recargar medicamentos
+          const medications = await window.MediSafeSQLite.getMedications();
+          displayMedications(medications);
+        }
+      });
+      
+      // Botón cargar medicamentos
+      document.getElementById('load-medications-btn').addEventListener('click', async function() {
+        debugLog('📋 Cargando medicamentos...');
+        const medications = await window.MediSafeSQLite.getMedications();
+        displayMedications(medications);
+      });
+      
+      // Botón test medicamento
+      document.getElementById('test-medication-btn').addEventListener('click', async function() {
+        debugLog('🧪 Creando medicamento de prueba...');
+        
+        const testMedication = {
+          name: 'Paracetamol',
+          dose: '500mg',
+          freq: 'Cada 6 horas',
+          time: '08:00',
+          expiry: '2024-12-31',
+          notes: 'Medicamento de prueba'
+        };
+        
+        const success = await window.MediSafeSQLite.saveMedication(testMedication);
+        if (success) {
+          const medications = await window.MediSafeSQLite.getMedications();
+          displayMedications(medications);
+        }
+      });
+      
+      // Formulario de recordatorios
+      document.getElementById('reminder-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        debugLog('🔔 Guardando recordatorio...');
+        
+        const reminder = {
+          title: document.getElementById('reminder-title').value,
+          description: document.getElementById('reminder-description').value,
+          date: document.getElementById('reminder-date').value,
+          time: document.getElementById('reminder-time').value
+        };
+        
+        const success = await window.MediSafeSQLite.saveReminder(reminder);
+        if (success) {
+          this.reset();
+          // Recargar recordatorios
+          const reminders = await window.MediSafeSQLite.getReminders();
+          displayReminders(reminders);
+        }
+      });
+      
+      // Botón cargar recordatorios
+      document.getElementById('load-reminders-btn').addEventListener('click', async function() {
+        debugLog('🔔 Cargando recordatorios...');
+        const reminders = await window.MediSafeSQLite.getReminders();
+        displayReminders(reminders);
+      });
+      
+      // Botón test recordatorio
+      document.getElementById('test-reminder-btn').addEventListener('click', async function() {
+        debugLog('🧪 Creando recordatorio de prueba...');
+        
+        const testReminder = {
+          title: 'Tomar medicamento',
+          description: 'Recordatorio para tomar el medicamento',
+          date: new Date().toISOString().split('T')[0],
+          time: '08:00'
+        };
+        
+        const success = await window.MediSafeSQLite.saveReminder(testReminder);
+        if (success) {
+          const reminders = await window.MediSafeSQLite.getReminders();
+          displayReminders(reminders);
+        }
+      });
+      
+      // Formulario de metas
+      document.getElementById('goal-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        debugLog('🎯 Guardando meta...');
+        
+        const goal = {
+          title: document.getElementById('goal-title').value,
+          description: document.getElementById('goal-description').value,
+          target_date: document.getElementById('goal-target-date').value,
+          priority: document.getElementById('goal-priority').value
+        };
+        
+        const success = await window.MediSafeSQLite.saveGoal(goal);
+        if (success) {
+          this.reset();
+          // Recargar metas
+          const goals = await window.MediSafeSQLite.getGoals();
+          displayGoals(goals);
+        }
+      });
+      
+      // Botón cargar metas
+      document.getElementById('load-goals-btn').addEventListener('click', async function() {
+        debugLog('🎯 Cargando metas...');
+        const goals = await window.MediSafeSQLite.getGoals();
+        displayGoals(goals);
+      });
+      
+      // Botón test meta
+      document.getElementById('test-goal-btn').addEventListener('click', async function() {
+        debugLog('🧪 Creando meta de prueba...');
+        
+        const testGoal = {
+          title: 'Mejorar salud',
+          description: 'Meta de prueba para mejorar la salud',
+          target_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          priority: 'media'
+        };
+        
+        const success = await window.MediSafeSQLite.saveGoal(testGoal);
+        if (success) {
+          const goals = await window.MediSafeSQLite.getGoals();
+          displayGoals(goals);
+        }
+      });
+      
+      // Botón limpiar debug
+      document.getElementById('clear-debug-btn').addEventListener('click', function() {
+        document.getElementById('debug-output').innerHTML = 'Debug limpiado...\n';
+      });
+      
+      debugLog('✅ Todos los event listeners configurados');
+      
+      // Verificar conexión cada 30 segundos
+      setInterval(async () => {
+        const isConnected = await window.MediSafeSQLite.checkServerConnection();
+        updateConnectionStatus(isConnected);
+      }, 30000);
+    });
+  </script>
+</body>
+</html> 

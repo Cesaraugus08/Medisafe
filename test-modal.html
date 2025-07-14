@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Modal - MediSafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    .test-section {
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      background-color: #f8f9fa;
+    }
+    .debug-log {
+      background-color: #000;
+      color: #00ff00;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-capsule me-2"></i>Test Modal - MediSafe
+    </h1>
+    
+    <!-- Botón para abrir modal -->
+    <div class="test-section">
+      <h3>Test Modal</h3>
+      <button id="open-modal-btn" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i>Abrir Modal de Medicamento
+      </button>
+    </div>
+    
+    <!-- Debug console -->
+    <div class="test-section">
+      <h3>Debug Console</h3>
+      <div id="debug-output" class="debug-log">
+        Iniciando debug...
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para agregar medicamento -->
+  <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLabel">
+            <i class="bi bi-plus-circle me-2"></i>Agregar Medicamento
+          </h5>
+          <button type="button" class="btn-close" id="close-modal" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="med-form">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="med-name" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="med-name" required aria-required="true">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="med-dose" class="form-label">Dosis</label>
+                <input type="text" class="form-control" id="med-dose" required aria-required="true">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="med-freq" class="form-label">Frecuencia</label>
+                <input type="text" class="form-control" id="med-freq" required aria-required="true">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="med-time" class="form-label">Horario</label>
+                <input type="time" class="form-control" id="med-time" required aria-required="true">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="med-expiry" class="form-label">Fecha de caducidad</label>
+              <input type="date" class="form-control" id="med-expiry" required aria-required="true">
+            </div>
+            <div class="mb-3">
+              <label for="med-notes" class="form-label">Notas</label>
+              <textarea class="form-control" id="med-notes" rows="3"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="close-modal" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" form="med-form" class="btn btn-primary" id="save-med-btn">
+            <i class="bi bi-check-circle me-2"></i>Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Función de debug
+    function debugLog(message) {
+      const debugOutput = document.getElementById('debug-output');
+      const timestamp = new Date().toLocaleTimeString();
+      debugOutput.innerHTML += `[${timestamp}] ${message}\n`;
+      debugOutput.scrollTop = debugOutput.scrollHeight;
+      console.log(message);
+    }
+    
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 3000);
+    }
+    
+    // Función para cerrar modal de manera definitiva
+    function forceCloseModal(modalId) {
+      const modalElement = document.getElementById(modalId);
+      if (!modalElement) return;
+      
+      debugLog(`🔧 Cerrando modal: ${modalId}`);
+      
+      // Método 1: Bootstrap API
+      try {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+          modalInstance.hide();
+          debugLog('✅ Modal cerrado con Bootstrap API');
+        }
+      } catch (error) {
+        debugLog(`❌ Error con Bootstrap API: ${error}`);
+      }
+      
+      // Método 2: Crear nueva instancia
+      try {
+        const newModal = new bootstrap.Modal(modalElement);
+        newModal.hide();
+        debugLog('✅ Modal cerrado con nueva instancia');
+      } catch (error) {
+        debugLog(`❌ Error con nueva instancia: ${error}`);
+      }
+      
+      // Método 3: Forzar cierre manual
+      setTimeout(() => {
+        debugLog('🔧 Forzando cierre manual...');
+        
+        // Remover clases de Bootstrap
+        modalElement.classList.remove('show');
+        modalElement.style.display = 'none';
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.removeAttribute('aria-modal');
+        
+        // Remover backdrop
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => {
+          backdrop.remove();
+        });
+        
+        // Restaurar body
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        
+        debugLog('✅ Cierre manual completado');
+      }, 50);
+    }
+    
+    // Función para guardar medicamento
+    function saveMedication(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      debugLog('🔧 Guardando medicamento...');
+      
+      const med = {
+        id: Date.now().toString(),
+        name: document.getElementById('med-name').value,
+        dose: document.getElementById('med-dose').value,
+        freq: document.getElementById('med-freq').value,
+        time: document.getElementById('med-time').value,
+        expiry: document.getElementById('med-expiry').value,
+        notes: document.getElementById('med-notes').value
+      };
+      
+      debugLog('📝 Datos del medicamento:', med);
+      
+      // Cerrar el modal
+      debugLog('🚪 Cerrando modal...');
+      forceCloseModal('modal');
+      
+      // Limpiar formulario
+      document.getElementById('med-form').reset();
+      
+      // Mostrar notificación
+      showNotification(`✅ Medicamento "${med.name}" guardado exitosamente`, 'success');
+      
+      debugLog('✅ Proceso completado');
+    }
+    
+    // Configurar event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('🚀 DOM cargado, configurando event listeners...');
+      
+      // Botón para abrir modal
+      document.getElementById('open-modal-btn').addEventListener('click', function() {
+        debugLog('🎯 Abriendo modal...');
+        const modal = new bootstrap.Modal(document.getElementById('modal'));
+        modal.show();
+      });
+      
+      // Event listener para el formulario
+      document.getElementById('med-form').addEventListener('submit', saveMedication);
+      
+      // Event listener directo para el botón de guardar
+      const saveButton = document.getElementById('save-med-btn');
+      if (saveButton) {
+        debugLog('✅ Botón de guardar encontrado, agregando event listener directo');
+        saveButton.addEventListener('click', saveMedication);
+      } else {
+        debugLog('❌ Botón de guardar no encontrado');
+      }
+      
+      // Botón de cerrar modal
+      document.getElementById('close-modal').addEventListener('click', function() {
+        debugLog('🎯 Cerrando modal con botón cancelar');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modal'));
+        if (modal) {
+          modal.hide();
+        }
+      });
+      
+      debugLog('✅ Todos los event listeners configurados');
+    });
+  </script>
+</body>
+</html> 

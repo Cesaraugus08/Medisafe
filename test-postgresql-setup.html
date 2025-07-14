@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test PostgreSQL Setup - MediSafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    .test-section {
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      background-color: #f8f9fa;
+    }
+    .success { border-color: #28a745; }
+    .error { border-color: #dc3545; }
+    .warning { border-color: #ffc107; }
+    .debug-log {
+      background-color: #000;
+      color: #00ff00;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-database me-2"></i>Test PostgreSQL Setup - MediSafe
+    </h1>
+    
+    <!-- Sección de estado del servidor -->
+    <div class="test-section" id="server-status">
+      <h3>Estado del Servidor</h3>
+      <div id="server-info">
+        <p><strong>API Base URL:</strong> <span id="api-url">http://localhost:3000/api</span></p>
+        <p><strong>Estado:</strong> <span id="server-state">Verificando...</span></p>
+        <button id="test-server-btn" class="btn btn-primary">
+          <i class="bi bi-arrow-clockwise me-2"></i>Verificar Servidor
+        </button>
+      </div>
+    </div>
+    
+    <!-- Sección de autenticación -->
+    <div class="test-section" id="auth-section">
+      <h3>Pruebas de Autenticación</h3>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Login</h5>
+          <form id="login-form">
+            <div class="mb-3">
+              <label for="login-username" class="form-label">Usuario</label>
+              <input type="text" class="form-control" id="login-username" value="testuser">
+            </div>
+            <div class="mb-3">
+              <label for="login-password" class="form-label">Contraseña</label>
+              <input type="password" class="form-control" id="login-password" value="test123">
+            </div>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </button>
+          </form>
+        </div>
+        
+        <div class="col-md-6">
+          <h5>Registro</h5>
+          <form id="register-form">
+            <div class="mb-3">
+              <label for="register-username" class="form-label">Usuario</label>
+              <input type="text" class="form-control" id="register-username">
+            </div>
+            <div class="mb-3">
+              <label for="register-password" class="form-label">Contraseña</label>
+              <input type="password" class="form-control" id="register-password">
+            </div>
+            <div class="mb-3">
+              <label for="register-email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="register-email">
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-person-plus me-2"></i>Registrar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sección de pruebas de API -->
+    <div class="test-section" id="api-section" style="display: none;">
+      <h3>Pruebas de API</h3>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Medicamentos</h5>
+          <button id="test-get-meds-btn" class="btn btn-info mb-2">
+            <i class="bi bi-list me-2"></i>Obtener Medicamentos
+          </button>
+          <button id="test-add-med-btn" class="btn btn-success mb-2">
+            <i class="bi bi-plus me-2"></i>Agregar Medicamento
+          </button>
+        </div>
+        
+        <div class="col-md-6">
+          <h5>Metas</h5>
+          <button id="test-get-goals-btn" class="btn btn-info mb-2">
+            <i class="bi bi-list me-2"></i>Obtener Metas
+          </button>
+          <button id="test-add-goal-btn" class="btn btn-success mb-2">
+            <i class="bi bi-plus me-2"></i>Agregar Meta
+          </button>
+        </div>
+      </div>
+      
+      <div class="mt-3">
+        <button id="logout-btn" class="btn btn-danger">
+          <i class="bi bi-box-arrow-right me-2"></i>Logout
+        </button>
+      </div>
+    </div>
+    
+    <!-- Sección de debug -->
+    <div class="test-section">
+      <h3>Debug Console</h3>
+      <div id="debug-output" class="debug-log">
+        Iniciando debug...
+      </div>
+      <button id="clear-debug-btn" class="btn btn-secondary mt-2">
+        <i class="bi bi-trash me-2"></i>Limpiar Debug
+      </button>
+    </div>
+    
+    <!-- Sección de resultados -->
+    <div class="test-section">
+      <h3>Resultados de las Pruebas</h3>
+      <div id="test-results">
+        <p>Ejecuta las pruebas para ver los resultados aquí...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Configuración
+    const API_BASE_URL = 'http://localhost:3000/api';
+    let authToken = null;
+    let currentUser = null;
+    
+    // Función de debug
+    function debugLog(message) {
+      const debugOutput = document.getElementById('debug-output');
+      const timestamp = new Date().toLocaleTimeString();
+      debugOutput.innerHTML += `[${timestamp}] ${message}\n`;
+      debugOutput.scrollTop = debugOutput.scrollHeight;
+      console.log(message);
+    }
+    
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 3000);
+    }
+    
+    // Función para hacer requests a la API
+    async function apiRequest(endpoint, options = {}) {
+      const url = `${API_BASE_URL}${endpoint}`;
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+          ...options.headers
+        },
+        ...options
+      };
+
+      try {
+        debugLog(`🌐 API Request: ${options.method || 'GET'} ${endpoint}`);
+        const response = await fetch(url, config);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        debugLog(`✅ API Response: ${JSON.stringify(data).substring(0, 100)}...`);
+        return data;
+      } catch (error) {
+        debugLog(`❌ API Error: ${error.message}`);
+        throw error;
+      }
+    }
+    
+    // Función para verificar estado del servidor
+    async function checkServerStatus() {
+      try {
+        debugLog('🔍 Verificando estado del servidor...');
+        const serverState = document.getElementById('server-state');
+        serverState.textContent = 'Verificando...';
+        
+        const response = await apiRequest('/health');
+        
+        serverState.textContent = '✅ Conectado';
+        document.getElementById('server-status').classList.add('success');
+        showNotification('Servidor conectado correctamente', 'success');
+        
+        return true;
+      } catch (error) {
+        const serverState = document.getElementById('server-state');
+        serverState.textContent = '❌ No conectado';
+        document.getElementById('server-status').classList.add('error');
+        showNotification('Error conectando al servidor', 'error');
+        return false;
+      }
+    }
+    
+    // Función de login
+    async function login(username, password) {
+      try {
+        debugLog(`🔐 Intentando login con usuario: ${username}`);
+        
+        const response = await apiRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+        
+        authToken = response.token;
+        currentUser = response.user;
+        
+        debugLog(`✅ Login exitoso para usuario: ${currentUser.username}`);
+        showNotification('Login exitoso', 'success');
+        
+        // Mostrar sección de API
+        document.getElementById('api-section').style.display = 'block';
+        
+        return response;
+      } catch (error) {
+        debugLog(`❌ Error en login: ${error.message}`);
+        showNotification(`Error en login: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+    
+    // Función de registro
+    async function register(username, password, email) {
+      try {
+        debugLog(`📝 Intentando registro con usuario: ${username}`);
+        
+        const response = await apiRequest('/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({ username, password, email })
+        });
+        
+        authToken = response.token;
+        currentUser = response.user;
+        
+        debugLog(`✅ Registro exitoso para usuario: ${currentUser.username}`);
+        showNotification('Usuario registrado exitosamente', 'success');
+        
+        // Mostrar sección de API
+        document.getElementById('api-section').style.display = 'block';
+        
+        return response;
+      } catch (error) {
+        debugLog(`❌ Error en registro: ${error.message}`);
+        showNotification(`Error en registro: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+    
+    // Función de logout
+    function logout() {
+      authToken = null;
+      currentUser = null;
+      document.getElementById('api-section').style.display = 'none';
+      showNotification('Logout exitoso', 'info');
+      debugLog('🚪 Logout realizado');
+    }
+    
+    // Función para obtener medicamentos
+    async function getMedications() {
+      try {
+        debugLog('💊 Obteniendo medicamentos...');
+        const medications = await apiRequest('/medications');
+        
+        const testResults = document.getElementById('test-results');
+        if (medications.length === 0) {
+          testResults.innerHTML = '<p class="text-muted">No hay medicamentos registrados.</p>';
+        } else {
+          let html = '<h5>Medicamentos:</h5><ul>';
+          medications.forEach(med => {
+            html += `<li><strong>${med.name}</strong> - ${med.dose} - ${med.frequency}</li>`;
+          });
+          html += '</ul>';
+          testResults.innerHTML = html;
+        }
+        
+        showNotification(`Se encontraron ${medications.length} medicamentos`, 'success');
+        return medications;
+      } catch (error) {
+        showNotification('Error obteniendo medicamentos', 'error');
+        throw error;
+      }
+    }
+    
+    // Función para agregar medicamento
+    async function addMedication() {
+      try {
+        debugLog('💊 Agregando medicamento de prueba...');
+        
+        const testMedication = {
+          name: 'Test Medicamento',
+          dose: '1 tableta',
+          frequency: 'Cada 8 horas',
+          time: '08:00',
+          expiry_date: '2024-12-31',
+          notes: 'Medicamento de prueba'
+        };
+        
+        const response = await apiRequest('/medications', {
+          method: 'POST',
+          body: JSON.stringify(testMedication)
+        });
+        
+        debugLog(`✅ Medicamento agregado: ${response.name}`);
+        showNotification('Medicamento agregado exitosamente', 'success');
+        
+        // Actualizar lista
+        await getMedications();
+        
+        return response;
+      } catch (error) {
+        showNotification('Error agregando medicamento', 'error');
+        throw error;
+      }
+    }
+    
+    // Función para obtener metas
+    async function getGoals() {
+      try {
+        debugLog('🎯 Obteniendo metas...');
+        const goals = await apiRequest('/goals');
+        
+        const testResults = document.getElementById('test-results');
+        if (goals.length === 0) {
+          testResults.innerHTML = '<p class="text-muted">No hay metas registradas.</p>';
+        } else {
+          let html = '<h5>Metas:</h5><ul>';
+          goals.forEach(goal => {
+            html += `<li><strong>${goal.title}</strong> - ${goal.description || 'Sin descripción'}</li>`;
+          });
+          html += '</ul>';
+          testResults.innerHTML = html;
+        }
+        
+        showNotification(`Se encontraron ${goals.length} metas`, 'success');
+        return goals;
+      } catch (error) {
+        showNotification('Error obteniendo metas', 'error');
+        throw error;
+      }
+    }
+    
+    // Función para agregar meta
+    async function addGoal() {
+      try {
+        debugLog('🎯 Agregando meta de prueba...');
+        
+        const testGoal = {
+          title: 'Test Meta',
+          description: 'Meta de prueba para verificar la API',
+          deadline: '2024-12-31'
+        };
+        
+        const response = await apiRequest('/goals', {
+          method: 'POST',
+          body: JSON.stringify(testGoal)
+        });
+        
+        debugLog(`✅ Meta agregada: ${response.title}`);
+        showNotification('Meta agregada exitosamente', 'success');
+        
+        // Actualizar lista
+        await getGoals();
+        
+        return response;
+      } catch (error) {
+        showNotification('Error agregando meta', 'error');
+        throw error;
+      }
+    }
+    
+    // Configurar event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('🚀 Inicializando test de PostgreSQL...');
+      
+      // Verificar estado del servidor al cargar
+      checkServerStatus();
+      
+      // Event listener para verificar servidor
+      document.getElementById('test-server-btn').addEventListener('click', checkServerStatus);
+      
+      // Event listener para login
+      document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        await login(username, password);
+      });
+      
+      // Event listener para registro
+      document.getElementById('register-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('register-username').value;
+        const password = document.getElementById('register-password').value;
+        const email = document.getElementById('register-email').value;
+        await register(username, password, email);
+      });
+      
+      // Event listener para logout
+      document.getElementById('logout-btn').addEventListener('click', logout);
+      
+      // Event listeners para pruebas de API
+      document.getElementById('test-get-meds-btn').addEventListener('click', getMedications);
+      document.getElementById('test-add-med-btn').addEventListener('click', addMedication);
+      document.getElementById('test-get-goals-btn').addEventListener('click', getGoals);
+      document.getElementById('test-add-goal-btn').addEventListener('click', addGoal);
+      
+      // Event listener para limpiar debug
+      document.getElementById('clear-debug-btn').addEventListener('click', function() {
+        document.getElementById('debug-output').innerHTML = 'Debug limpiado...\n';
+      });
+      
+      debugLog('✅ Todos los event listeners configurados');
+    });
+  </script>
+</body>
+</html> 

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Medicación - MediSafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    .test-section {
+      border: 2px solid #28a745;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      background-color: #f8f9fa;
+    }
+    .debug-log {
+      background-color: #000;
+      color: #00ff00;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-capsule me-2"></i>Test Medicación - MediSafe
+    </h1>
+    
+    <!-- Sección de estado actual -->
+    <div class="test-section">
+      <h3>Estado Actual</h3>
+      <div id="current-status">
+        <p><strong>Medicamentos registrados:</strong> <span id="med-count">Cargando...</span></p>
+        <p><strong>Usuario actual:</strong> <span id="current-user">Cargando...</span></p>
+      </div>
+    </div>
+    
+    <!-- Sección de botones de medicación -->
+    <div class="test-section">
+      <h3>Funcionalidad de Medicación</h3>
+      <p>Prueba la funcionalidad de agregar medicamentos:</p>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Botones Principales</h5>
+          <button id="add-med-btn" class="btn btn-success btn-lg mb-3">
+            <i class="bi bi-plus-circle me-2"></i>Agregar Medicamento
+          </button>
+          <button id="test-render-btn" class="btn btn-info btn-lg mb-3">
+            <i class="bi bi-list me-2"></i>Renderizar Medicamentos
+          </button>
+        </div>
+        
+        <div class="col-md-6">
+          <h5>Funciones de Test</h5>
+          <button id="test-save-btn" class="btn btn-warning btn-lg mb-3">
+            <i class="bi bi-save me-2"></i>Test Guardar
+          </button>
+          <button id="test-clear-btn" class="btn btn-danger btn-lg mb-3">
+            <i class="bi bi-trash me-2"></i>Limpiar Datos
+          </button>
+        </div>
+      </div>
+    </div>
+    
+
+    
+    <!-- Sección de debug -->
+    <div class="test-section">
+      <h3>Debug Console</h3>
+      <div id="debug-output" class="debug-log">
+        Iniciando debug...
+      </div>
+      <button id="debug-btn" class="btn btn-info mt-2">
+        <i class="bi bi-bug me-2"></i>Ejecutar Debug
+      </button>
+    </div>
+    
+    <!-- Sección de resultados -->
+    <div class="test-section">
+      <h3>Resultados del Test</h3>
+      <div id="test-results">
+        <p>Haz clic en los botones para ver los resultados aquí...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para agregar medicamento -->
+  <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLabel">
+            <i class="bi bi-plus-circle me-2"></i>Agregar Medicamento
+          </h5>
+          <button type="button" class="btn-close" id="close-modal" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="med-form">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="med-name" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="med-name" required aria-required="true">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="med-dose" class="form-label">Dosis</label>
+                <input type="text" class="form-control" id="med-dose" required aria-required="true">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="med-freq" class="form-label">Frecuencia</label>
+                <input type="text" class="form-control" id="med-freq" required aria-required="true">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="med-time" class="form-label">Horario</label>
+                <input type="time" class="form-control" id="med-time" required aria-required="true">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="med-expiry" class="form-label">Fecha de caducidad</label>
+              <input type="date" class="form-control" id="med-expiry" required aria-required="true">
+            </div>
+            <div class="mb-3">
+              <label for="med-notes" class="form-label">Notas</label>
+              <textarea class="form-control" id="med-notes" rows="3"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="close-modal" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" form="med-form" class="btn btn-primary">
+            <i class="bi bi-check-circle me-2"></i>Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Función de debug mejorada
+    function debugLog(message) {
+      const debugOutput = document.getElementById('debug-output');
+      const timestamp = new Date().toLocaleTimeString();
+      debugOutput.innerHTML += `[${timestamp}] ${message}\n`;
+      debugOutput.scrollTop = debugOutput.scrollHeight;
+      console.log(message);
+    }
+    
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 3000);
+    }
+    
+    // Funciones de medicación
+    function getMeds() {
+      const meds = JSON.parse(localStorage.getItem('medications') || '[]');
+      return meds;
+    }
+    
+    function saveMeds(meds) {
+      localStorage.setItem('medications', JSON.stringify(meds));
+    }
+    
+    function renderMeds() {
+      const meds = getMeds();
+      debugLog(`📋 Renderizando ${meds.length} medicamentos`);
+      
+      const testResults = document.getElementById('test-results');
+      if (meds.length === 0) {
+        testResults.innerHTML = '<p class="text-muted">No hay medicamentos registrados.</p>';
+      } else {
+        let html = '<h5>Medicamentos Registrados:</h5><ul>';
+        meds.forEach((med, index) => {
+          html += `<li><strong>${med.name}</strong> - ${med.dose} - ${med.freq} - ${med.time}</li>`;
+        });
+        html += '</ul>';
+        
+
+        
+        testResults.innerHTML = html;
+      }
+      
+      updateStatus();
+    }
+    
+    function updateStatus() {
+      const meds = getMeds();
+      const currentUser = localStorage.getItem('currentUser') || 'Usuario de prueba';
+      
+      document.getElementById('med-count').textContent = meds.length;
+      document.getElementById('current-user').textContent = currentUser;
+    }
+    
+
+    
+    // Event listener para el formulario de medicación
+    const defaultMedFormHandler = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      debugLog('🔧 Guardando medicamento...');
+      
+      const med = {
+        id: Date.now().toString(),
+        name: document.getElementById('med-name').value,
+        dose: document.getElementById('med-dose').value,
+        freq: document.getElementById('med-freq').value,
+        time: document.getElementById('med-time').value,
+        expiry: document.getElementById('med-expiry').value,
+        notes: document.getElementById('med-notes').value
+      };
+      
+      debugLog('📝 Datos del medicamento:', med);
+      
+      const meds = getMeds();
+      meds.push(med);
+      saveMeds(meds);
+      renderMeds();
+      
+      // Cerrar modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('modal'));
+      if (modal) {
+        modal.hide();
+      }
+      
+      // Limpiar formulario
+      document.getElementById('med-form').reset();
+      document.getElementById('med-form').onsubmit = defaultMedFormHandler;
+      
+      // Mostrar notificación
+      showNotification(`✅ Medicamento "${med.name}" guardado exitosamente`, 'success');
+      
+      debugLog('✅ Proceso completado');
+    };
+    
+    // Función de debug completa
+    function runDebug() {
+      debugLog('🔍 === EJECUTANDO DEBUG COMPLETO ===');
+      
+      // Verificar botones
+      const buttons = [
+        'add-med-btn',
+        'test-render-btn',
+        'test-save-btn',
+        'test-clear-btn'
+      ];
+      
+      buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          debugLog(`✅ Botón ${btnId} encontrado`);
+        } else {
+          debugLog(`❌ Botón ${btnId} NO encontrado`);
+        }
+      });
+      
+      // Verificar modal
+      const modal = document.getElementById('modal');
+      if (modal) {
+        debugLog('✅ Modal de medicación encontrado');
+      } else {
+        debugLog('❌ Modal de medicación NO encontrado');
+      }
+      
+      // Verificar formulario
+      const form = document.getElementById('med-form');
+      if (form) {
+        debugLog('✅ Formulario de medicación encontrado');
+      } else {
+        debugLog('❌ Formulario de medicación NO encontrado');
+      }
+      
+      // Verificar localStorage
+      const meds = getMeds();
+      debugLog(`📋 Medicamentos en localStorage: ${meds.length}`);
+      
+      // Verificar Bootstrap
+      if (typeof bootstrap !== 'undefined') {
+        debugLog('✅ Bootstrap cargado correctamente');
+      } else {
+        debugLog('❌ Bootstrap NO cargado');
+      }
+      
+      debugLog('=== FIN DEBUG ===');
+    }
+    
+    // Configurar event listeners cuando se carga el DOM
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('🚀 DOM cargado, configurando event listeners...');
+      
+      // Simular usuario de prueba
+      if (!localStorage.getItem('currentUser')) {
+        localStorage.setItem('currentUser', 'Usuario de Prueba');
+        debugLog('👤 Usuario de prueba creado');
+      }
+      
+      // Actualizar estado inicial
+      updateStatus();
+      renderMeds();
+      
+      // Event listener para agregar medicamento
+      document.getElementById('add-med-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón agregar medicamento clickeado');
+        const modal = new bootstrap.Modal(document.getElementById('modal'));
+        document.getElementById('med-form').reset();
+        document.getElementById('med-form').onsubmit = defaultMedFormHandler;
+        modal.show();
+      });
+      
+      // Event listener para renderizar medicamentos
+      document.getElementById('test-render-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón renderizar medicamentos clickeado');
+        renderMeds();
+      });
+      
+      // Event listener para test de guardar
+      document.getElementById('test-save-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón test guardar clickeado');
+        
+        const testMed = {
+          id: Date.now().toString(),
+          name: 'Test Medicamento',
+          dose: '1 tableta',
+          freq: 'Cada 8 horas',
+          time: '08:00',
+          expiry: '2024-12-31',
+          notes: 'Medicamento de prueba'
+        };
+        
+        const meds = getMeds();
+        meds.push(testMed);
+        saveMeds(meds);
+        renderMeds();
+        
+        showNotification('✅ Medicamento de prueba guardado', 'success');
+      });
+      
+      // Event listener para limpiar datos
+      document.getElementById('test-clear-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón limpiar datos clickeado');
+        
+        if (confirm('¿Estás seguro de que quieres limpiar todos los datos de medicamentos?')) {
+          localStorage.removeItem('medications');
+          renderMeds();
+          showNotification('🗑️ Datos de medicamentos limpiados', 'warning');
+        }
+      });
+      
+
+      
+      // Event listener para cerrar modal
+      document.getElementById('close-modal').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón cerrar modal clickeado');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modal'));
+        if (modal) {
+          modal.hide();
+        }
+        document.getElementById('med-form').reset();
+        document.getElementById('med-form').onsubmit = defaultMedFormHandler;
+      });
+      
+      // Configurar formulario
+      document.getElementById('med-form').onsubmit = defaultMedFormHandler;
+      
+      // Botón de debug
+      document.getElementById('debug-btn').addEventListener('click', runDebug);
+      
+      debugLog('✅ Todos los event listeners configurados');
+      
+      // Ejecutar debug inicial
+      setTimeout(runDebug, 500);
+    });
+  </script>
+</body>
+</html> 

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Logout - MediSafe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <style>
+        .test-container {
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .status-panel {
+            background: #f8f9fa;
+            border: 2px solid #007bff;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .test-buttons {
+            margin: 2rem 0;
+        }
+        
+        .test-button {
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="bi bi-heart-pulse me-2"></i>MediSafe
+            </a>
+            <p class="navbar-text mb-0 d-none d-md-block">Test Logout</p>
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-gear me-2"></i>Opciones
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">
+                        <i class="bi bi-person me-2"></i>Perfil
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" id="logout-btn">
+                        <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container test-container">
+        <h1>🚪 Test Botón de Logout</h1>
+        
+        <div class="status-panel">
+            <h3>Estado de la Sesión</h3>
+            <p><strong>Usuario actual:</strong> <span id="current-user">Verificando...</span></p>
+            <p><strong>Estado de login:</strong> <span id="login-status">Verificando...</span></p>
+            <p><strong>Botón logout:</strong> <span id="logout-status">Verificando...</span></p>
+        </div>
+        
+        <div class="test-buttons">
+            <h3>Botones de Prueba</h3>
+            <button id="test-logout" class="btn btn-danger test-button">
+                <i class="bi bi-box-arrow-right me-2"></i>Probar Logout
+            </button>
+            <button id="test-login" class="btn btn-success test-button">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Simular Login
+            </button>
+            <button id="test-notification" class="btn btn-info test-button">
+                <i class="bi bi-bell me-2"></i>Probar Notificación
+            </button>
+        </div>
+        
+        <div class="mt-4">
+            <h3>Comandos de Consola</h3>
+            <p>Abre la consola (F12) y ejecuta:</p>
+            <ul class="text-start">
+                <li><code>logout()</code> - Cerrar sesión manualmente</li>
+                <li><code>getCurrentUser()</code> - Ver usuario actual</li>
+                <li><code>showNotification('Test', 'info')</code> - Probar notificación</li>
+                <li><code>localStorage.getItem('currentUser')</code> - Ver datos de sesión</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Función para actualizar estado
+        function updateStatus() {
+            const currentUser = getCurrentUser();
+            const logoutBtn = document.getElementById('logout-btn');
+            
+            document.getElementById('current-user').textContent = currentUser || 'No hay usuario';
+            document.getElementById('login-status').textContent = currentUser ? '✅ Logeado' : '❌ No logead';
+            document.getElementById('logout-status').textContent = logoutBtn ? '✅ Encontrado' : '❌ No encontrado';
+        }
+        
+        // Test de logout
+        document.getElementById('test-logout').onclick = function() {
+            console.log('🧪 Probando logout...');
+            logout();
+            setTimeout(updateStatus, 100);
+        };
+        
+        // Test de login simulado
+        document.getElementById('test-login').onclick = function() {
+            console.log('🧪 Simulando login...');
+            setCurrentUser('usuario_test');
+            updateStatus();
+        };
+        
+        // Test de notificación
+        document.getElementById('test-notification').onclick = function() {
+            console.log('🧪 Probando notificación...');
+            showNotification('Esta es una notificación de prueba', 'info');
+        };
+        
+        // Actualizar estado inicial
+        updateStatus();
+        
+        // Actualizar estado cada segundo
+        setInterval(updateStatus, 1000);
+        
+        console.log('🚪 Test de logout cargado');
+        console.log('💡 Usa logout() en la consola para probar');
+    </script>
+</body>
+</html> 

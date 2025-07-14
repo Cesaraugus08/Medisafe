@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Notificaciones Recordatorios - MediSafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-bell me-2"></i>Test Notificaciones de Recordatorios - MediSafe
+    </h1>
+    
+    <!-- Estado del sistema -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Estado del Sistema</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="text-center">
+              <h6>Verificador Activo</h6>
+              <span id="checker-status" class="badge bg-secondary">Desconocido</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <h6>Permisos Notificaciones</h6>
+              <span id="notification-permission" class="badge bg-secondary">Desconocido</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <h6>Recordatorios Activos</h6>
+              <span id="active-reminders" class="badge bg-secondary">0</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <h6>Hora Actual</h6>
+              <span id="current-time" class="badge bg-info">--:--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Controles de prueba -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Controles del Sistema</h6>
+          </div>
+          <div class="card-body">
+            <button id="start-checker" class="btn btn-success btn-lg w-100 mb-3">
+              <i class="bi bi-play-circle me-2"></i>Iniciar Verificador
+            </button>
+            <button id="stop-checker" class="btn btn-danger btn-lg w-100 mb-3">
+              <i class="bi bi-stop-circle me-2"></i>Detener Verificador
+            </button>
+            <button id="request-permission" class="btn btn-warning btn-lg w-100 mb-3">
+              <i class="bi bi-bell me-2"></i>Solicitar Permisos
+            </button>
+            <button id="test-notification" class="btn btn-info btn-lg w-100">
+              <i class="bi bi-bell me-2"></i>Probar Notificación
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Crear Recordatorio de Prueba</h6>
+          </div>
+          <div class="card-body">
+            <form id="test-reminder-form">
+              <div class="mb-3">
+                <label for="test-med-name" class="form-label">Nombre del Medicamento</label>
+                <input type="text" class="form-control" id="test-med-name" value="Medicamento de Prueba" required>
+              </div>
+              <div class="mb-3">
+                <label for="test-reminder-time" class="form-label">Hora del Recordatorio</label>
+                <input type="time" class="form-control" id="test-reminder-time" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Días de la semana</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="test-day-monday" value="1" checked>
+                  <label class="form-check-label" for="test-day-monday">Lunes</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="test-day-tuesday" value="2" checked>
+                  <label class="form-check-label" for="test-day-tuesday">Martes</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="test-day-wednesday" value="3" checked>
+                  <label class="form-check-label" for="test-day-wednesday">Miércoles</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="test-day-thursday" value="4" checked>
+                  <label class="form-check-label" for="test-day-thursday">Jueves</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="test-day-friday" value="5" checked>
+                  <label class="form-check-label" for="test-day-friday">Viernes</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="test-day-saturday" value="6" checked>
+                  <label class="form-check-label" for="test-day-saturday">Sábado</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="test-day-sunday" value="0" checked>
+                  <label class="form-check-label" for="test-day-sunday">Domingo</label>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-plus-circle me-2"></i>Crear Recordatorio de Prueba
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Log de eventos -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-list me-2"></i>Log de Eventos</h6>
+      </div>
+      <div class="card-body">
+        <div id="event-log" class="bg-dark text-light p-3 rounded" style="height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+          <div>Iniciando sistema de notificaciones...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Funciones básicas
+    function getMeds() {
+      return JSON.parse(localStorage.getItem('medications') || '[]');
+    }
+    
+    function saveMeds(meds) {
+      localStorage.setItem('medications', JSON.stringify(meds));
+    }
+    
+    function getReminders() {
+      return JSON.parse(localStorage.getItem('reminders') || '[]');
+    }
+    
+    function saveReminders(reminders) {
+      localStorage.setItem('reminders', JSON.stringify(reminders));
+    }
+    
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 5000);
+    }
+    
+    // Función para agregar log
+    function addLog(message) {
+      const log = document.getElementById('event-log');
+      const timestamp = new Date().toLocaleTimeString();
+      log.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+      log.scrollTop = log.scrollHeight;
+      console.log(message);
+    }
+    
+    // Función para actualizar estado
+    function updateStatus() {
+      // Estado del verificador
+      const checkerStatus = document.getElementById('checker-status');
+      if (window.reminderChecker) {
+        checkerStatus.textContent = 'Activo';
+        checkerStatus.className = 'badge bg-success';
+      } else {
+        checkerStatus.textContent = 'Inactivo';
+        checkerStatus.className = 'badge bg-danger';
+      }
+      
+      // Permisos de notificación
+      const notificationPermission = document.getElementById('notification-permission');
+      if ('Notification' in window) {
+        notificationPermission.textContent = Notification.permission;
+        if (Notification.permission === 'granted') {
+          notificationPermission.className = 'badge bg-success';
+        } else if (Notification.permission === 'denied') {
+          notificationPermission.className = 'badge bg-danger';
+        } else {
+          notificationPermission.className = 'badge bg-warning';
+        }
+      } else {
+        notificationPermission.textContent = 'No disponible';
+        notificationPermission.className = 'badge bg-secondary';
+      }
+      
+      // Recordatorios activos
+      const activeReminders = document.getElementById('active-reminders');
+      const reminders = getReminders();
+      const activeCount = reminders.filter(r => r.active).length;
+      activeReminders.textContent = activeCount;
+      
+      // Hora actual
+      const currentTime = document.getElementById('current-time');
+      currentTime.textContent = new Date().toLocaleTimeString();
+    }
+    
+    // Variables globales para el verificador
+    let reminderChecker = null;
+    let lastNotificationTime = {};
+    
+    // Función para iniciar el verificador de recordatorios
+    function startReminderChecker() {
+      addLog('🔔 Iniciando verificador de recordatorios...');
+      
+      // Detener verificador existente si hay uno
+      if (reminderChecker) {
+        clearInterval(reminderChecker);
+      }
+      
+      // Verificar cada 10 segundos para pruebas (en producción sería cada minuto)
+      reminderChecker = setInterval(checkReminders, 10000); // 10 segundos para pruebas
+      
+      // Verificar inmediatamente al iniciar
+      checkReminders();
+      
+      addLog('✅ Verificador de recordatorios iniciado');
+      updateStatus();
+    }
+    
+    // Función para detener el verificador de recordatorios
+    function stopReminderChecker() {
+      if (reminderChecker) {
+        clearInterval(reminderChecker);
+        reminderChecker = null;
+        addLog('🛑 Verificador de recordatorios detenido');
+        updateStatus();
+      }
+    }
+    
+    // Función principal para verificar recordatorios
+    function checkReminders() {
+      const reminders = getReminders();
+      const meds = getMeds();
+      const now = new Date();
+      const currentDay = now.getDay();
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      
+      addLog(`🔍 Verificando ${reminders.length} recordatorios...`);
+      
+      reminders.forEach(reminder => {
+        if (!reminder.active) return;
+        
+        // Verificar si es el día correcto
+        if (!reminder.days.includes(currentDay)) return;
+        
+        // Obtener información del medicamento
+        const med = meds.find(m => m.id === reminder.medId);
+        if (!med) return;
+        
+        // Convertir hora del recordatorio a minutos
+        const [reminderHour, reminderMinute] = reminder.time.split(':').map(Number);
+        const reminderTime = reminderHour * 60 + reminderMinute;
+        
+        // Calcular diferencia de tiempo
+        const timeDiff = currentTime - reminderTime;
+        
+        addLog(`⏰ Recordatorio: ${med.name} a las ${reminder.time} (diferencia: ${timeDiff} min)`);
+        
+        // Verificar si es hora de tomar el medicamento (con tolerancia de 5 minutos)
+        if (timeDiff >= 0 && timeDiff <= 5) {
+          showReminderNotification(med, reminder, 'due');
+        }
+        // Verificar si se pasó la hora (más de 5 minutos)
+        else if (timeDiff > 5 && timeDiff <= 60) {
+          showReminderNotification(med, reminder, 'overdue');
+        }
+        // Verificar si se pasó mucho tiempo (más de 1 hora)
+        else if (timeDiff > 60) {
+          showReminderNotification(med, reminder, 'very-overdue');
+        }
+      });
+    }
+    
+    // Función para mostrar notificación de recordatorio
+    function showReminderNotification(med, reminder, status) {
+      const reminderKey = `${reminder.id}-${reminder.time}`;
+      const now = new Date();
+      const lastNotification = lastNotificationTime[reminderKey];
+      
+      // Evitar notificaciones duplicadas (máximo una cada 2 minutos para pruebas)
+      if (lastNotification && (now - lastNotification) < 120000) { // 2 minutos para pruebas
+        addLog('⚠️ Notificación evitada (duplicada)');
+        return;
+      }
+      
+      let title, message, type, icon;
+      
+      switch (status) {
+        case 'due':
+          title = '⏰ Hora de tomar tu medicamento';
+          message = `Es hora de tomar ${med.name} (${med.dose})`;
+          type = 'warning';
+          icon = '⏰';
+          break;
+          
+        case 'overdue':
+          title = '⚠️ Medicamento pendiente';
+          message = `Se pasó la hora de tomar ${med.name} (${med.dose})`;
+          type = 'error';
+          icon = '⚠️';
+          break;
+          
+        case 'very-overdue':
+          title = '🚨 Medicamento muy retrasado';
+          message = `Hace más de una hora que deberías haber tomado ${med.name} (${med.dose})`;
+          type = 'error';
+          icon = '🚨';
+          break;
+      }
+      
+      // Mostrar notificación en pantalla
+      showNotification(`${icon} ${title}\n${message}`, type);
+      
+      // Mostrar notificación del navegador si está disponible
+      showBrowserNotification(title, message);
+      
+      // Registrar tiempo de la notificación
+      lastNotificationTime[reminderKey] = now;
+      
+      addLog(`🔔 Notificación mostrada: ${med.name} - ${status}`);
+    }
+    
+    // Función para mostrar notificación del navegador
+    function showBrowserNotification(title, message) {
+      if (!('Notification' in window)) {
+        addLog('❌ Notificaciones del navegador no disponibles');
+        return;
+      }
+      
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body: message,
+          icon: '/favicon.ico',
+          tag: 'medication-reminder',
+          requireInteraction: true
+        });
+        addLog('✅ Notificación del navegador enviada');
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            showBrowserNotification(title, message);
+          }
+        });
+      }
+    }
+    
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      addLog('🚀 Sistema de notificaciones iniciado');
+      
+      // Botón para iniciar verificador
+      document.getElementById('start-checker').addEventListener('click', function() {
+        startReminderChecker();
+      });
+      
+      // Botón para detener verificador
+      document.getElementById('stop-checker').addEventListener('click', function() {
+        stopReminderChecker();
+      });
+      
+      // Botón para solicitar permisos
+      document.getElementById('request-permission').addEventListener('click', function() {
+        if ('Notification' in window) {
+          Notification.requestPermission().then(permission => {
+            addLog(`🔔 Permiso de notificación: ${permission}`);
+            updateStatus();
+          });
+        }
+      });
+      
+      // Botón para probar notificación
+      document.getElementById('test-notification').addEventListener('click', function() {
+        const testMed = {
+          name: 'Medicamento de Prueba',
+          dose: '1 tableta'
+        };
+        const testReminder = {
+          id: 'test',
+          time: '12:00'
+        };
+        showReminderNotification(testMed, testReminder, 'due');
+      });
+      
+      // Formulario para crear recordatorio de prueba
+      document.getElementById('test-reminder-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const medName = document.getElementById('test-med-name').value;
+        const reminderTime = document.getElementById('test-reminder-time').value;
+        
+        if (!medName || !reminderTime) {
+          showNotification('Por favor completa todos los campos', 'error');
+          return;
+        }
+        
+        // Obtener días seleccionados
+        const days = [];
+        const dayCheckboxes = document.querySelectorAll('input[id^="test-day-"]:checked');
+        dayCheckboxes.forEach(checkbox => {
+          days.push(parseInt(checkbox.value));
+        });
+        
+        if (days.length === 0) {
+          showNotification('Selecciona al menos un día', 'error');
+          return;
+        }
+        
+        // Crear medicamento de prueba
+        const testMed = {
+          id: 'test-med-' + Date.now(),
+          name: medName,
+          dose: '1 tableta',
+          freq: 'Cada 8 horas',
+          time: '08:00',
+          expiry: '2024-12-31',
+          notes: 'Medicamento de prueba'
+        };
+        
+        // Crear recordatorio de prueba
+        const testReminder = {
+          id: 'test-reminder-' + Date.now(),
+          medId: testMed.id,
+          time: reminderTime,
+          days: days,
+          active: true
+        };
+        
+        // Guardar medicamento y recordatorio
+        const meds = getMeds();
+        meds.push(testMed);
+        saveMeds(meds);
+        
+        const reminders = getReminders();
+        reminders.push(testReminder);
+        saveReminders(reminders);
+        
+        addLog(`✅ Recordatorio de prueba creado: ${medName} a las ${reminderTime}`);
+        showNotification('Recordatorio de prueba creado exitosamente', 'success');
+        updateStatus();
+        
+        // Limpiar formulario
+        e.target.reset();
+      });
+      
+      // Actualizar estado inicial
+      updateStatus();
+      
+      // Actualizar hora cada segundo
+      setInterval(updateStatus, 1000);
+    });
+  </script>
+</body>
+</html> 

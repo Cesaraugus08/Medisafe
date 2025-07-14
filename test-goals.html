@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Metas - MediSafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .test-section {
+      border: 2px solid #28a745;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      background-color: #f8f9fa;
+    }
+    .debug-log {
+      background-color: #000;
+      color: #00ff00;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-target me-2"></i>Test Metas Personales - MediSafe
+    </h1>
+    
+    <!-- Sección de estado actual -->
+    <div class="test-section">
+      <h3>Estado Actual</h3>
+      <div id="current-status">
+        <p><strong>Metas registradas:</strong> <span id="goals-count">Cargando...</span></p>
+        <p><strong>Metas completadas:</strong> <span id="completed-count">Cargando...</span></p>
+        <p><strong>Metas pendientes:</strong> <span id="pending-count">Cargando...</span></p>
+      </div>
+    </div>
+    
+    <!-- Sección de botones de metas -->
+    <div class="test-section">
+      <h3>Funcionalidad de Metas</h3>
+      <p>Prueba la funcionalidad de agregar y gestionar metas:</p>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Botones Principales</h5>
+          <button id="open-goals-modal-btn" class="btn btn-success btn-lg mb-3">
+            <i class="bi bi-target me-2"></i>Abrir Modal de Metas
+          </button>
+          <button id="test-render-goals-btn" class="btn btn-info btn-lg mb-3">
+            <i class="bi bi-list me-2"></i>Renderizar Metas
+          </button>
+        </div>
+        
+        <div class="col-md-6">
+          <h5>Funciones de Test</h5>
+          <button id="test-add-goal-btn" class="btn btn-warning btn-lg mb-3">
+            <i class="bi bi-plus-circle me-2"></i>Test Agregar Meta
+          </button>
+          <button id="test-clear-goals-btn" class="btn btn-danger btn-lg mb-3">
+            <i class="bi bi-trash me-2"></i>Limpiar Datos
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sección de debug -->
+    <div class="test-section">
+      <h3>Debug Console</h3>
+      <div id="debug-output" class="debug-log">
+        Iniciando debug...
+      </div>
+      <button id="debug-btn" class="btn btn-info mt-2">
+        <i class="bi bi-bug me-2"></i>Ejecutar Debug
+      </button>
+    </div>
+    
+    <!-- Sección de resultados -->
+    <div class="test-section">
+      <h3>Resultados del Test</h3>
+      <div id="test-results">
+        <p>Haz clic en los botones para ver los resultados aquí...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para logros y metas -->
+  <div class="modal fade" id="achievements-modal" tabindex="-1" aria-labelledby="achievementsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="achievementsModalLabel">
+            <i class="bi bi-trophy me-2"></i>Logros y Metas
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Pestañas para navegación -->
+          <ul class="nav nav-tabs" id="achievements-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="achievements-tab" data-bs-toggle="tab" data-bs-target="#achievements-content" type="button" role="tab">
+                <i class="bi bi-trophy me-2"></i>Logros
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="goals-tab" data-bs-toggle="tab" data-bs-target="#goals-content" type="button" role="tab">
+                <i class="bi bi-target me-2"></i>Mis Metas
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="add-goal-tab" data-bs-toggle="tab" data-bs-target="#add-goal-content" type="button" role="tab">
+                <i class="bi bi-plus-circle me-2"></i>Nueva Meta
+              </button>
+            </li>
+          </ul>
+          
+          <!-- Contenido de las pestañas -->
+          <div class="tab-content mt-3" id="achievements-tab-content">
+            <!-- Pestaña de Logros -->
+            <div class="tab-pane fade show active" id="achievements-content" role="tabpanel">
+              <div class="row">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header">
+                      <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Logros Desbloqueados</h6>
+                    </div>
+                    <div class="card-body">
+                      <div id="achievements-section">
+                        <div class="achievement-item unlocked">
+                          <div class="achievement-icon">🏆</div>
+                          <div class="achievement-content">
+                            <div class="achievement-title">Primer Medicamento</div>
+                            <div class="achievement-description">Agregaste tu primer medicamento</div>
+                          </div>
+                        </div>
+                        <div class="achievement-item unlocked">
+                          <div class="achievement-icon">📅</div>
+                          <div class="achievement-content">
+                            <div class="achievement-title">Organizado</div>
+                            <div class="achievement-description">Mantuviste tu lista actualizada por 7 días</div>
+                          </div>
+                        </div>
+                        <div class="achievement-item locked">
+                          <div class="achievement-icon">🎯</div>
+                          <div class="achievement-content">
+                            <div class="achievement-title">Perfecto</div>
+                            <div class="achievement-description">100% de cumplimiento por 30 días</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Pestaña de Metas Guardadas -->
+            <div class="tab-pane fade" id="goals-content" role="tabpanel">
+              <div class="row">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0"><i class="bi bi-target me-2"></i>Mis Metas Personales</h6>
+                      <button class="btn btn-sm btn-outline-primary" id="refresh-goals-btn">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
+                      </button>
+                    </div>
+                    <div class="card-body">
+                      <div id="goals-list">
+                        <p class="text-muted text-center">Cargando metas...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Pestaña para Agregar Nueva Meta -->
+            <div class="tab-pane fade" id="add-goal-content" role="tabpanel">
+              <div class="row">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header">
+                      <h6 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Crear Nueva Meta</h6>
+                    </div>
+                    <div class="card-body">
+                      <form id="goals-form">
+                        <div class="mb-3">
+                          <label for="goal-title" class="form-label">Título de la meta</label>
+                          <input type="text" class="form-control" id="goal-title" placeholder="Ej: Tomar medicamentos a tiempo" required>
+                        </div>
+                        <div class="mb-3">
+                          <label for="goal-description" class="form-label">Descripción</label>
+                          <textarea class="form-control" id="goal-description" rows="3" placeholder="Describe tu meta..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                          <label for="goal-deadline" class="form-label">Fecha límite</label>
+                          <input type="date" class="form-control" id="goal-deadline">
+                        </div>
+                        <div class="d-flex gap-2">
+                          <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-2"></i>Crear Meta
+                          </button>
+                          <button type="button" class="btn btn-secondary" id="clear-goal-form">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Limpiar
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Función de debug mejorada
+    function debugLog(message) {
+      const debugOutput = document.getElementById('debug-output');
+      const timestamp = new Date().toLocaleTimeString();
+      debugOutput.innerHTML += `[${timestamp}] ${message}\n`;
+      debugOutput.scrollTop = debugOutput.scrollHeight;
+      console.log(message);
+    }
+    
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 3000);
+    }
+    
+    // Funciones de metas
+    function getGoals() {
+      return JSON.parse(localStorage.getItem('goals') || '[]');
+    }
+    
+    function saveGoals(goals) {
+      localStorage.setItem('goals', JSON.stringify(goals));
+    }
+    
+    function renderGoals() {
+      const goals = getGoals();
+      debugLog(`🎯 Renderizando ${goals.length} metas`);
+      
+      const testResults = document.getElementById('test-results');
+      if (goals.length === 0) {
+        testResults.innerHTML = '<p class="text-muted">No hay metas registradas.</p>';
+      } else {
+        let html = '<h5>Metas Registradas:</h5><ul>';
+        goals.forEach((goal, index) => {
+          const status = goal.completed ? '✅ Completada' : '⏳ Pendiente';
+          html += `<li><strong>${goal.title}</strong> - ${status} - ${goal.deadline || 'Sin fecha límite'}</li>`;
+        });
+        html += '</ul>';
+        
+        testResults.innerHTML = html;
+      }
+      
+      updateStatus();
+    }
+    
+    function updateStatus() {
+      const goals = getGoals();
+      const completedGoals = goals.filter(goal => goal.completed);
+      const pendingGoals = goals.filter(goal => !goal.completed);
+      
+      document.getElementById('goals-count').textContent = goals.length;
+      document.getElementById('completed-count').textContent = completedGoals.length;
+      document.getElementById('pending-count').textContent = pendingGoals.length;
+    }
+    
+    // Función de debug completa
+    function runDebug() {
+      debugLog('🔍 === EJECUTANDO DEBUG COMPLETO ===');
+      
+      // Verificar botones
+      const buttons = [
+        'open-goals-modal-btn',
+        'test-render-goals-btn',
+        'test-add-goal-btn',
+        'test-clear-goals-btn'
+      ];
+      
+      buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          debugLog(`✅ Botón ${btnId} encontrado`);
+        } else {
+          debugLog(`❌ Botón ${btnId} NO encontrado`);
+        }
+      });
+      
+      // Verificar modal
+      const modal = document.getElementById('achievements-modal');
+      if (modal) {
+        debugLog('✅ Modal de metas encontrado');
+      } else {
+        debugLog('❌ Modal de metas NO encontrado');
+      }
+      
+      // Verificar formulario
+      const form = document.getElementById('goals-form');
+      if (form) {
+        debugLog('✅ Formulario de metas encontrado');
+      } else {
+        debugLog('❌ Formulario de metas NO encontrado');
+      }
+      
+      // Verificar localStorage
+      const goals = getGoals();
+      debugLog(`🎯 Metas en localStorage: ${goals.length}`);
+      
+      // Verificar Bootstrap
+      if (typeof bootstrap !== 'undefined') {
+        debugLog('✅ Bootstrap cargado correctamente');
+      } else {
+        debugLog('❌ Bootstrap NO cargado');
+      }
+      
+      debugLog('=== FIN DEBUG ===');
+    }
+    
+    // Configurar event listeners cuando se carga el DOM
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('🚀 DOM cargado, configurando event listeners...');
+      
+      // Actualizar estado inicial
+      updateStatus();
+      renderGoals();
+      
+      // Event listener para abrir modal de metas
+      document.getElementById('open-goals-modal-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón abrir modal de metas clickeado');
+        const modal = new bootstrap.Modal(document.getElementById('achievements-modal'));
+        modal.show();
+      });
+      
+      // Event listener para renderizar metas
+      document.getElementById('test-render-goals-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón renderizar metas clickeado');
+        renderGoals();
+      });
+      
+      // Event listener para test de agregar meta
+      document.getElementById('test-add-goal-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón test agregar meta clickeado');
+        
+        const testGoal = {
+          id: Date.now().toString(),
+          title: 'Test Meta',
+          description: 'Esta es una meta de prueba',
+          deadline: '2024-12-31',
+          completed: false,
+          createdAt: new Date().toISOString()
+        };
+        
+        const goals = getGoals();
+        goals.push(testGoal);
+        saveGoals(goals);
+        renderGoals();
+        
+        showNotification('✅ Meta de prueba creada', 'success');
+      });
+      
+      // Event listener para limpiar datos
+      document.getElementById('test-clear-goals-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        debugLog('🎯 Botón limpiar datos clickeado');
+        
+        if (confirm('¿Estás seguro de que quieres limpiar todos los datos de metas?')) {
+          localStorage.removeItem('goals');
+          renderGoals();
+          showNotification('🗑️ Datos de metas limpiados', 'warning');
+        }
+      });
+      
+      // Botón de debug
+      document.getElementById('debug-btn').addEventListener('click', runDebug);
+      
+      debugLog('✅ Todos los event listeners configurados');
+      
+      // Ejecutar debug inicial
+      setTimeout(runDebug, 500);
+    });
+  </script>
+</body>
+</html> 

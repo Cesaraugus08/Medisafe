@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Tamaño de Fuente - MediSafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .test-section {
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      background-color: #f8f9fa;
+    }
+    .debug-log {
+      background-color: #000;
+      color: #00ff00;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .font-preview {
+      padding: 1rem;
+      border: 1px solid #dee2e6;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-type me-2"></i>Test Tamaño de Fuente - MediSafe
+    </h1>
+    
+    <!-- Botón para abrir modal -->
+    <div class="test-section">
+      <h3>Test Selector de Tamaño de Fuente</h3>
+      <button id="open-font-modal-btn" class="btn btn-primary">
+        <i class="bi bi-type me-2"></i>Abrir Selector de Tamaño de Fuente
+      </button>
+    </div>
+    
+    <!-- Vista previa de texto -->
+    <div class="test-section">
+      <h3>Vista Previa de Texto</h3>
+      <div class="font-preview">
+        <h4>Este es un título de ejemplo</h4>
+        <p>Este es un párrafo de ejemplo que muestra cómo se ve el texto con el tamaño de fuente seleccionado. El texto incluye diferentes elementos como <strong>texto en negrita</strong>, <em>texto en cursiva</em>, y enlaces.</p>
+        <ul>
+          <li>Elemento de lista 1</li>
+          <li>Elemento de lista 2</li>
+          <li>Elemento de lista 3</li>
+        </ul>
+        <button class="btn btn-success">Botón de ejemplo</button>
+        <input type="text" class="form-control mt-2" placeholder="Campo de texto de ejemplo">
+      </div>
+    </div>
+    
+    <!-- Debug console -->
+    <div class="test-section">
+      <h3>Debug Console</h3>
+      <div id="debug-output" class="debug-log">
+        Iniciando debug...
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para selección de tamaño de fuente -->
+  <div class="modal fade" id="font-size-modal" tabindex="-1" aria-labelledby="fontSizeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="fontSizeModalLabel">
+            <i class="bi bi-type me-2"></i>Tamaño de Fuente
+          </h5>
+          <button type="button" class="btn-close" id="close-font-size" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted mb-3">Selecciona el tamaño de fuente que prefieras para la aplicación:</p>
+          <div class="font-size-options">
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="radio" name="fontSize" id="font-small" value="small">
+              <label class="form-check-label" for="font-small">
+                <span style="font-size: 0.875rem;">Pequeño</span>
+              </label>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="radio" name="fontSize" id="font-medium" value="medium" checked>
+              <label class="form-check-label" for="font-medium">
+                <span style="font-size: 1rem;">Normal</span>
+              </label>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="radio" name="fontSize" id="font-large" value="large">
+              <label class="form-check-label" for="font-large">
+                <span style="font-size: 1.125rem;">Grande</span>
+              </label>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="radio" name="fontSize" id="font-xlarge" value="xlarge">
+              <label class="form-check-label" for="font-xlarge">
+                <span style="font-size: 1.25rem;">Extra grande</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="close-font-size" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="apply-font-size">
+            <i class="bi bi-check-circle me-2"></i>Aplicar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // Función de debug
+    function debugLog(message) {
+      const debugOutput = document.getElementById('debug-output');
+      const timestamp = new Date().toLocaleTimeString();
+      debugOutput.innerHTML += `[${timestamp}] ${message}\n`;
+      debugOutput.scrollTop = debugOutput.scrollHeight;
+      console.log(message);
+    }
+    
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 3000);
+    }
+    
+    // Funciones para manejo de tamaño de fuente
+    function setupFontSizeSelector() {
+      debugLog('🔧 Configurando selector de tamaño de fuente...');
+      
+      // Cargar tamaño de fuente guardado
+      loadFontSize();
+      
+      // Event listener para abrir modal de tamaño de fuente
+      const openFontModalBtn = document.getElementById('open-font-modal-btn');
+      if (openFontModalBtn) {
+        openFontModalBtn.addEventListener('click', function() {
+          debugLog('🎯 Abriendo modal de tamaño de fuente...');
+          showFontSizeModal();
+        });
+      }
+      
+      // Event listener para aplicar tamaño de fuente
+      const applyFontSizeBtn = document.getElementById('apply-font-size');
+      if (applyFontSizeBtn) {
+        applyFontSizeBtn.addEventListener('click', function() {
+          applyFontSize();
+        });
+      }
+      
+      // Event listeners para opciones de radio
+      const radioButtons = document.querySelectorAll('input[name="fontSize"]');
+      radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+          updateFontSizePreview();
+        });
+      });
+      
+      debugLog('✅ Selector de tamaño de fuente configurado');
+    }
+    
+    function showFontSizeModal() {
+      debugLog('🎯 Abriendo modal de tamaño de fuente...');
+      const modal = new bootstrap.Modal(document.getElementById('font-size-modal'));
+      modal.show();
+      
+      // Marcar la opción actual
+      const currentFontSize = getCurrentFontSize();
+      const radioButton = document.querySelector(`input[name="fontSize"][value="${currentFontSize}"]`);
+      if (radioButton) {
+        radioButton.checked = true;
+      }
+    }
+    
+    function getCurrentFontSize() {
+      return localStorage.getItem('fontSize') || 'medium';
+    }
+    
+    function setFontSize(size) {
+      debugLog(`🔧 Aplicando tamaño de fuente: ${size}`);
+      
+      // Remover todas las clases de tamaño de fuente
+      document.body.classList.remove('font-small', 'font-medium', 'font-large', 'font-xlarge');
+      
+      // Aplicar la nueva clase
+      document.body.classList.add(`font-${size}`);
+      
+      // Guardar en localStorage
+      localStorage.setItem('fontSize', size);
+      
+      // Mostrar notificación
+      const sizeNames = {
+        'small': 'Pequeño',
+        'medium': 'Normal',
+        'large': 'Grande',
+        'xlarge': 'Extra grande'
+      };
+      
+      showNotification(`✅ Tamaño de fuente cambiado a: ${sizeNames[size]}`, 'success');
+      
+      debugLog('✅ Tamaño de fuente aplicado');
+    }
+    
+    function loadFontSize() {
+      const fontSize = getCurrentFontSize();
+      debugLog(`📖 Cargando tamaño de fuente: ${fontSize}`);
+      setFontSize(fontSize);
+    }
+    
+    function applyFontSize() {
+      const selectedRadio = document.querySelector('input[name="fontSize"]:checked');
+      if (selectedRadio) {
+        const newSize = selectedRadio.value;
+        debugLog(`🎯 Aplicando nuevo tamaño: ${newSize}`);
+        
+        setFontSize(newSize);
+        
+        // Cerrar el modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('font-size-modal'));
+        if (modal) {
+          modal.hide();
+        }
+      }
+    }
+    
+    function updateFontSizePreview() {
+      const selectedRadio = document.querySelector('input[name="fontSize"]:checked');
+      if (selectedRadio) {
+        const size = selectedRadio.value;
+        debugLog(`👁️ Vista previa de tamaño: ${size}`);
+        
+        // Aplicar temporalmente para vista previa
+        document.body.classList.remove('font-small', 'font-medium', 'font-large', 'font-xlarge');
+        document.body.classList.add(`font-${size}`);
+      }
+    }
+    
+    // Configurar cuando se carga el DOM
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('🚀 DOM cargado, configurando selector de tamaño de fuente...');
+      setupFontSizeSelector();
+    });
+  </script>
+</body>
+</html> 

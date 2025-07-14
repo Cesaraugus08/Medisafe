@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Conexión SQLite - MediSafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    .test-section {
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      background-color: #f8f9fa;
+    }
+    .connection-status {
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .status-connected {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status-disconnected {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .debug-log {
+      background-color: #000;
+      color: #00ff00;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .api-test {
+      background-color: #e7f3ff;
+      border: 1px solid #b3d9ff;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">
+      <i class="bi bi-database me-2"></i>Test Conexión SQLite - MediSafe
+    </h1>
+    
+    <!-- Estado de conexión -->
+    <div class="test-section">
+      <h3>Estado de Conexión</h3>
+      <div id="connection-status" class="connection-status status-disconnected">
+        <i class="bi bi-x-circle me-2"></i>Desconectado
+      </div>
+      <p class="mt-2">
+        <strong>Servidor:</strong> <span id="server-url">http://localhost:3000</span><br>
+        <strong>Base de datos:</strong> <span id="db-type">SQLite</span><br>
+        <strong>Última verificación:</strong> <span id="last-check">No verificada</span>
+      </p>
+    </div>
+    
+    <!-- Botones de control -->
+    <div class="test-section">
+      <h3>Control de Conexión</h3>
+      <div class="row">
+        <div class="col-md-6">
+          <button id="test-connection-btn" class="btn btn-primary btn-lg mb-3">
+            <i class="bi bi-wifi me-2"></i>Probar Conexión
+          </button>
+          <button id="start-server-btn" class="btn btn-success btn-lg mb-3">
+            <i class="bi bi-play-circle me-2"></i>Iniciar Servidor
+          </button>
+        </div>
+        <div class="col-md-6">
+          <button id="test-auth-btn" class="btn btn-info btn-lg mb-3">
+            <i class="bi bi-shield-check me-2"></i>Test Autenticación
+          </button>
+          <button id="test-medication-btn" class="btn btn-warning btn-lg mb-3">
+            <i class="bi bi-capsule me-2"></i>Test Medicamentos
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pruebas de API -->
+    <div class="test-section">
+      <h3>Pruebas de API</h3>
+      
+      <!-- Health Check -->
+      <div class="api-test">
+        <h5><i class="bi bi-heart-pulse me-2"></i>Health Check</h5>
+        <button id="health-check-btn" class="btn btn-outline-primary btn-sm">Probar Health Check</button>
+        <div id="health-result" class="mt-2"></div>
+      </div>
+      
+      <!-- Login -->
+      <div class="api-test">
+        <h5><i class="bi bi-person-check me-2"></i>Test Login</h5>
+        <div class="row">
+          <div class="col-md-4">
+            <input type="text" id="test-username" class="form-control mb-2" placeholder="Usuario" value="testuser">
+          </div>
+          <div class="col-md-4">
+            <input type="password" id="test-password" class="form-control mb-2" placeholder="Contraseña" value="test123">
+          </div>
+          <div class="col-md-4">
+            <button id="login-test-btn" class="btn btn-outline-success btn-sm">Probar Login</button>
+          </div>
+        </div>
+        <div id="login-result" class="mt-2"></div>
+      </div>
+      
+      <!-- Medicamentos -->
+      <div class="api-test">
+        <h5><i class="bi bi-capsule me-2"></i>Test Medicamentos</h5>
+        <button id="get-medications-btn" class="btn btn-outline-warning btn-sm me-2">Obtener Medicamentos</button>
+        <button id="add-medication-btn" class="btn btn-outline-info btn-sm">Agregar Medicamento</button>
+        <div id="medications-result" class="mt-2"></div>
+      </div>
+    </div>
+    
+    <!-- Debug Console -->
+    <div class="test-section">
+      <h3>Debug Console</h3>
+      <div id="debug-output" class="debug-log">
+        Iniciando debug...
+      </div>
+      <button id="clear-debug-btn" class="btn btn-secondary mt-2">
+        <i class="bi bi-trash me-2"></i>Limpiar Debug
+      </button>
+    </div>
+    
+    <!-- Resultados -->
+    <div class="test-section">
+      <h3>Resultados del Test</h3>
+      <div id="test-results">
+        <p class="text-muted">Ejecuta las pruebas para ver los resultados aquí...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Script SQLite -->
+  <script src="script-sqlite.js"></script>
+  
+  <script>
+    // Función de debug
+    function debugLog(message) {
+      const debugOutput = document.getElementById('debug-output');
+      const timestamp = new Date().toLocaleTimeString();
+      debugOutput.innerHTML += `[${timestamp}] ${message}\n`;
+      debugOutput.scrollTop = debugOutput.scrollHeight;
+      console.log(message);
+    }
+    
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+      notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      
+      notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 3000);
+    }
+    
+    // Función para actualizar estado de conexión
+    function updateConnectionStatus(isConnected) {
+      const statusElement = document.getElementById('connection-status');
+      const lastCheckElement = document.getElementById('last-check');
+      
+      if (isConnected) {
+        statusElement.className = 'connection-status status-connected';
+        statusElement.innerHTML = '<i class="bi bi-check-circle me-2"></i>Conectado';
+      } else {
+        statusElement.className = 'connection-status status-disconnected';
+        statusElement.innerHTML = '<i class="bi bi-x-circle me-2"></i>Desconectado';
+      }
+      
+      lastCheckElement.textContent = new Date().toLocaleTimeString();
+    }
+    
+    // Función para mostrar resultados
+    function showResult(elementId, content, isSuccess = true) {
+      const element = document.getElementById(elementId);
+      element.innerHTML = `
+        <div class="alert alert-${isSuccess ? 'success' : 'danger'} alert-sm">
+          <pre>${JSON.stringify(content, null, 2)}</pre>
+        </div>
+      `;
+    }
+    
+    // Test de conexión
+    async function testConnection() {
+      debugLog('🔌 Probando conexión con servidor SQLite...');
+      
+      try {
+        const isConnected = await medisafe.checkConnection();
+        updateConnectionStatus(isConnected);
+        
+        if (isConnected) {
+          debugLog('✅ Conexión exitosa');
+          showNotification('Conexión con SQLite establecida', 'success');
+        } else {
+          debugLog('❌ Conexión fallida');
+          showNotification('No se pudo conectar con el servidor SQLite', 'error');
+        }
+        
+        return isConnected;
+      } catch (error) {
+        debugLog('❌ Error en conexión: ' + error.message);
+        updateConnectionStatus(false);
+        showNotification('Error conectando con SQLite: ' + error.message, 'error');
+        return false;
+      }
+    }
+    
+    // Test de health check
+    async function testHealthCheck() {
+      debugLog('🏥 Probando health check...');
+      
+      try {
+        const response = await fetch('http://localhost:3000/api/health');
+        const data = await response.json();
+        
+        if (response.ok) {
+          debugLog('✅ Health check exitoso');
+          showResult('health-result', data, true);
+        } else {
+          debugLog('❌ Health check fallido');
+          showResult('health-result', data, false);
+        }
+      } catch (error) {
+        debugLog('❌ Error en health check: ' + error.message);
+        showResult('health-result', { error: error.message }, false);
+      }
+    }
+    
+    // Test de autenticación
+    async function testAuthentication() {
+      debugLog('🔐 Probando autenticación...');
+      
+      const username = document.getElementById('test-username').value;
+      const password = document.getElementById('test-password').value;
+      
+      try {
+        const result = await medisafe.login(username, password);
+        
+        if (result.success) {
+          debugLog('✅ Login exitoso: ' + result.user.username);
+          showResult('login-result', result, true);
+          showNotification('Login exitoso: ' + result.user.username, 'success');
+        } else {
+          debugLog('❌ Login fallido: ' + result.error);
+          showResult('login-result', result, false);
+          showNotification('Login fallido: ' + result.error, 'error');
+        }
+      } catch (error) {
+        debugLog('❌ Error en login: ' + error.message);
+        showResult('login-result', { error: error.message }, false);
+      }
+    }
+    
+    // Test de medicamentos
+    async function testGetMedications() {
+      debugLog('📋 Obteniendo medicamentos...');
+      
+      try {
+        const medications = await medisafe.getMedications();
+        debugLog(`✅ ${medications.length} medicamentos obtenidos`);
+        showResult('medications-result', medications, true);
+      } catch (error) {
+        debugLog('❌ Error obteniendo medicamentos: ' + error.message);
+        showResult('medications-result', { error: error.message }, false);
+      }
+    }
+    
+    async function testAddMedication() {
+      debugLog('💊 Agregando medicamento de prueba...');
+      
+      const testMedication = {
+        name: 'Test Medicamento ' + Date.now(),
+        dose: '1 tableta',
+        freq: 'Cada 8 horas',
+        time: '08:00',
+        expiry: '2024-12-31',
+        notes: 'Medicamento de prueba para SQLite'
+      };
+      
+      try {
+        const newMedication = await medisafe.addMedication(testMedication);
+        debugLog('✅ Medicamento agregado: ' + newMedication.name);
+        showResult('medications-result', newMedication, true);
+        showNotification('Medicamento agregado exitosamente', 'success');
+      } catch (error) {
+        debugLog('❌ Error agregando medicamento: ' + error.message);
+        showResult('medications-result', { error: error.message }, false);
+      }
+    }
+    
+    // Configurar event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      debugLog('🚀 Inicializando test de conexión SQLite...');
+      
+      // Test de conexión inicial
+      setTimeout(testConnection, 1000);
+      
+      // Event listeners
+      document.getElementById('test-connection-btn').addEventListener('click', testConnection);
+      document.getElementById('health-check-btn').addEventListener('click', testHealthCheck);
+      document.getElementById('login-test-btn').addEventListener('click', testAuthentication);
+      document.getElementById('get-medications-btn').addEventListener('click', testGetMedications);
+      document.getElementById('add-medication-btn').addEventListener('click', testAddMedication);
+      
+      // Botón para iniciar servidor (información)
+      document.getElementById('start-server-btn').addEventListener('click', function() {
+        showNotification('Para iniciar el servidor, ejecuta: node server-sqlite.js', 'info');
+        debugLog('💡 Comando para iniciar servidor: node server-sqlite.js');
+      });
+      
+      // Botón para limpiar debug
+      document.getElementById('clear-debug-btn').addEventListener('click', function() {
+        document.getElementById('debug-output').innerHTML = 'Debug limpiado...\n';
+      });
+      
+      debugLog('✅ Event listeners configurados');
+    });
+  </script>
+</body>
+</html> 
