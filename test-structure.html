@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSafe - Prueba de Estructura</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .status {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+            border-left: 4px solid;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        .btn {
+            background: #0d6efd;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+        .btn:hover {
+            background: #0b5ed7;
+        }
+        .file-list {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        .file-item {
+            padding: 0.25rem 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Prueba de Estructura - MediSafe</h1>
+        
+        <div id="status-container">
+            <div class="status warning">
+                <strong>⏳ Verificando estructura del proyecto...</strong>
+            </div>
+        </div>
+
+        <h2>📁 Estructura del Proyecto</h2>
+        
+        <div class="file-list">
+            <h3>🔧 Frontend</h3>
+            <div class="file-item">✅ index.html - Página principal</div>
+            <div class="file-item">✅ style.css - Estilos CSS</div>
+            <div class="file-item">✅ script.js - Lógica JavaScript</div>
+            <div class="file-item">✅ emailjs-config.js - Configuración EmailJS</div>
+            <div class="file-item">✅ config.js - Configuración del frontend</div>
+        </div>
+
+        <div class="file-list">
+            <h3>⚙️ Backend</h3>
+            <div class="file-item">✅ src/ - Código fuente</div>
+            <div class="file-item">✅ config/ - Configuraciones</div>
+            <div class="file-item">✅ controllers/ - Controladores</div>
+            <div class="file-item">✅ routes/ - Rutas de la API</div>
+            <div class="file-item">✅ middleware/ - Middleware</div>
+            <div class="file-item">✅ db/ - Base de datos</div>
+        </div>
+
+        <div class="file-list">
+            <h3>📱 Móvil</h3>
+            <div class="file-item">✅ medisafe-mobile/ - Aplicación React Native</div>
+        </div>
+
+        <div class="file-list">
+            <h3>📚 Documentación</h3>
+            <div class="file-item">✅ README.md - Documentación principal</div>
+            <div class="file-item">✅ docs/ - Carpeta de documentación</div>
+        </div>
+
+        <div class="file-list">
+            <h3>🛠️ Scripts</h3>
+            <div class="file-item">✅ scripts/ - Scripts de utilidad</div>
+        </div>
+
+        <h2>🚀 Acciones Disponibles</h2>
+        
+        <a href="frontend/index.html" class="btn">📱 Abrir Aplicación Principal</a>
+        <a href="backend/" class="btn">⚙️ Ver Backend</a>
+        <a href="mobile/" class="btn">📱 Ver Aplicación Móvil</a>
+        <a href="docs/" class="btn">📚 Ver Documentación</a>
+        <a href="scripts/" class="btn">🛠️ Ver Scripts</a>
+
+        <h2>🔍 Verificación de Archivos</h2>
+        <div id="file-check-results"></div>
+    </div>
+
+    <script>
+        // Función para verificar archivos
+        async function checkFiles() {
+            const filesToCheck = [
+                'frontend/index.html',
+                'frontend/style.css',
+                'frontend/script.js',
+                'frontend/emailjs-config.js',
+                'frontend/config.js',
+                'backend/package.json',
+                'mobile/README.md',
+                'docs/README.md',
+                'scripts/README.md',
+                'README.md',
+                'package.json'
+            ];
+
+            const results = document.getElementById('file-check-results');
+            let allGood = true;
+
+            for (const file of filesToCheck) {
+                try {
+                    const response = await fetch(file);
+                    const status = response.ok ? '✅' : '❌';
+                    const color = response.ok ? 'green' : 'red';
+                    
+                    const div = document.createElement('div');
+                    div.innerHTML = `${status} <span style="color: ${color}">${file}</span>`;
+                    div.style.padding = '0.25rem 0';
+                    results.appendChild(div);
+
+                    if (!response.ok) allGood = false;
+                } catch (error) {
+                    const div = document.createElement('div');
+                    div.innerHTML = `❌ <span style="color: red">${file} - Error: ${error.message}</span>`;
+                    div.style.padding = '0.25rem 0';
+                    results.appendChild(div);
+                    allGood = false;
+                }
+            }
+
+            // Actualizar estado
+            const statusContainer = document.getElementById('status-container');
+            if (allGood) {
+                statusContainer.innerHTML = `
+                    <div class="status success">
+                        <strong>✅ ¡Estructura del proyecto verificada correctamente!</strong>
+                        <br>Todos los archivos están en su lugar y accesibles.
+                    </div>
+                `;
+            } else {
+                statusContainer.innerHTML = `
+                    <div class="status error">
+                        <strong>❌ Se encontraron problemas en la estructura</strong>
+                        <br>Revisa los archivos marcados con ❌ arriba.
+                    </div>
+                `;
+            }
+        }
+
+        // Ejecutar verificación cuando se carga la página
+        window.addEventListener('load', checkFiles);
+    </script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediSafe API Visual Test</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f8f9fa; transition: background 0.3s, color 0.3s; }
+    .api-section { margin-bottom: 2rem; }
+    .response-box { background: #fff; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; min-height: 80px; }
+    .token-box { word-break: break-all; }
+    .dark-mode body { background: #181a1b !important; color: #e0e0e0 !important; }
+    .dark-mode .container { background: #23272b !important; color: #e0e0e0 !important; }
+    .dark-mode .response-box { background: #23272b !important; border-color: #444; color: #e0e0e0; }
+    .dark-mode .token-box { background: #23272b !important; color: #e0e0e0; }
+    .dark-mode .btn-secondary { background: #444 !important; color: #fff !important; border: none; }
+    .dark-mode .btn-primary, .dark-mode .btn-success, .dark-mode .btn-info, .dark-mode .btn-warning { filter: brightness(0.85); }
+    /* Botón de modo claro/oscuro fijo */
+    #toggle-theme {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 9999;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      opacity: 0.95;
+    }
+  </style>
+</head>
+<body>
+<button id="toggle-theme" class="btn btn-secondary" style="position:fixed;top:18px;right:18px;z-index:9999;font-size:1.2rem;padding:10px 18px;background:#222;color:#fff;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);opacity:0.98;">🌙 Modo Oscuro</button>
+<!-- Chatbot flotante -->
+<div id="chatbot-fab" style="position:fixed;bottom:24px;right:24px;z-index:9999;">
+  <button id="open-chatbot" class="btn btn-primary rounded-circle" style="width:56px;height:56px;font-size:1.8rem;box-shadow:0 2px 8px rgba(0,0,0,0.18);">💬</button>
+</div>
+<div id="chatbot-window" style="display:none;position:fixed;bottom:90px;right:24px;width:320px;max-width:95vw;height:420px;z-index:10000;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.18);border:1px solid #ddd;overflow:hidden;flex-direction:column;">
+  <div style="background:#007bff;color:#fff;padding:12px 16px;font-weight:bold;display:flex;align-items:center;justify-content:space-between;">
+    <span>Asistente MediSafe</span>
+    <button id="close-chatbot" class="btn btn-sm btn-light" style="font-size:1.2rem;">✖️</button>
+  </div>
+  <div id="chatbot-messages" style="flex:1;overflow-y:auto;padding:12px;background:#f8f9fa;"></div>
+  <form id="chatbot-form" style="display:flex;border-top:1px solid #eee;">
+    <input id="chatbot-input" type="text" class="form-control" placeholder="Escribe tu pregunta..." autocomplete="off" style="border:none;border-radius:0;">
+    <button class="btn btn-primary" type="submit" style="border-radius:0 0 8px 0;">Enviar</button>
+  </form>
+</div>
+<div class="container py-4">
+  <h1 class="mb-4">MediSafe API Visual Test</h1>
+
+  <!-- Registro y Login -->
+  <div class="api-section row">
+    <div class="col-md-6">
+      <h4>Registro</h4>
+      <form id="register-form">
+        <input type="text" class="form-control mb-2" id="reg-username" placeholder="Usuario" required>
+        <input type="password" class="form-control mb-2" id="reg-password" placeholder="Contraseña" required>
+        <input type="email" class="form-control mb-2" id="reg-email" placeholder="Email" required>
+        <button type="submit" class="btn btn-success w-100">Registrar</button>
+      </form>
+    </div>
+    <div class="col-md-6">
+      <h4>Login</h4>
+      <form id="login-form">
+        <input type="text" class="form-control mb-2" id="login-username" placeholder="Usuario" required>
+        <input type="password" class="form-control mb-2" id="login-password" placeholder="Contraseña" required>
+        <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+      </form>
+      <button id="logout-btn" class="btn btn-warning w-100 mt-2">Cerrar Sesión</button>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Token actual:</label>
+    <div class="response-box token-box" id="token-box">(No autenticado)</div>
+  </div>
+
+  <div class="api-section">
+    <h4>Medicamentos</h4>
+    <form id="medication-form" class="row g-2 mb-2">
+      <div class="col-md-2"><input type="text" class="form-control" id="med-name" placeholder="Nombre" required></div>
+      <div class="col-md-2"><input type="text" class="form-control" id="med-dose" placeholder="Dosis" required></div>
+      <div class="col-md-2"><input type="text" class="form-control" id="med-freq" placeholder="Frecuencia" required></div>
+      <div class="col-md-2"><input type="time" class="form-control" id="med-time" required></div>
+      <div class="col-md-2"><input type="date" class="form-control" id="med-expiry" required></div>
+      <div class="col-md-2"><input type="text" class="form-control" id="med-notes" placeholder="Notas"></div>
+      <div class="col-12 mt-2"><button type="submit" class="btn btn-success w-100">Agregar Medicamento</button></div>
+    </form>
+    <button id="load-meds-btn" class="btn btn-info mb-2">Cargar Medicamentos</button>
+    <div class="response-box" id="meds-response">(Medicamentos no cargados)</div>
+  </div>
+
+  <div class="api-section">
+    <h4>Recordatorios</h4>
+    <form id="reminder-form" class="row g-2 mb-2">
+      <div class="col-md-3"><input type="text" class="form-control" id="reminder-title" placeholder="Título" required></div>
+      <div class="col-md-3"><input type="text" class="form-control" id="reminder-description" placeholder="Descripción" required></div>
+      <div class="col-md-3"><input type="date" class="form-control" id="reminder-date" required></div>
+      <div class="col-md-3"><input type="time" class="form-control" id="reminder-time" required></div>
+      <div class="col-12 mt-2"><button type="submit" class="btn btn-success w-100">Agregar Recordatorio</button></div>
+    </form>
+    <button id="load-reminders-btn" class="btn btn-info mb-2">Cargar Recordatorios</button>
+    <div class="response-box" id="reminders-response">(Recordatorios no cargados)</div>
+  </div>
+
+  <div class="api-section">
+    <h4>Metas</h4>
+    <form id="goal-form" class="row g-2 mb-2">
+      <div class="col-md-3"><input type="text" class="form-control" id="goal-title" placeholder="Título" required></div>
+      <div class="col-md-3"><input type="text" class="form-control" id="goal-description" placeholder="Descripción" required></div>
+      <div class="col-md-3"><input type="date" class="form-control" id="goal-deadline" required></div>
+      <div class="col-md-3">
+        <select class="form-control" id="goal-priority" required>
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+      <div class="col-12 mt-2"><button type="submit" class="btn btn-success w-100">Agregar Meta</button></div>
+    </form>
+    <button id="load-goals-btn" class="btn btn-info mb-2">Cargar Metas</button>
+    <div class="response-box" id="goals-response">(Metas no cargadas)</div>
+  </div>
+
+  <div class="api-section">
+    <h4>Mensajes y Respuestas</h4>
+    <div class="response-box" id="api-response">(Aquí aparecerán los mensajes de la API)</div>
+  </div>
+</div>
+
+<script>
+let token = '';
+
+function showResponse(id, data) {
+  document.getElementById(id).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+}
+function showAPIMessage(msg) {
+  if (typeof msg === 'object' && msg !== null) {
+    if (msg.error) {
+      showResponse('api-response', '❌ ' + msg.error);
+    } else if (msg.message) {
+      showResponse('api-response', '✅ ' + msg.message);
+    } else {
+      showResponse('api-response', JSON.stringify(msg, null, 2));
+    }
+  } else {
+    showResponse('api-response', msg);
+  }
+}
+function updateTokenBox() {
+  document.getElementById('token-box').textContent = token ? token : '(No autenticado)';
+}
+
+// Registro
+const regForm = document.getElementById('register-form');
+regForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const username = document.getElementById('reg-username').value;
+  const password = document.getElementById('reg-password').value;
+  const email = document.getElementById('reg-email').value;
+  console.log('[Registro] Enviando datos:', { username, password, email });
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, email })
+    });
+    console.log('[Registro] Respuesta recibida:', res);
+    const data = await res.json();
+    console.log('[Registro] JSON de respuesta:', data);
+    showAPIMessage(data.message || data.error || JSON.stringify(data));
+    if (data.token) {
+      token = data.token;
+      updateTokenBox();
+    }
+  } catch (err) {
+    console.error('[Registro] Error en fetch:', err);
+    showAPIMessage('Error en registro');
+  }
+});
+
+// Login
+const loginForm = document.getElementById('login-form');
+loginForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    showAPIMessage(data.message || JSON.stringify(data));
+    if (data.token) {
+      token = data.token;
+      updateTokenBox();
+    }
+  } catch (err) {
+    showAPIMessage('Error en login');
+  }
+});
+
+document.getElementById('logout-btn').addEventListener('click', function() {
+  token = '';
+  updateTokenBox();
+  showAPIMessage('Sesión cerrada');
+});
+
+// Medicamentos
+const medForm = document.getElementById('medication-form');
+medForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const med = {
+    name: document.getElementById('med-name').value,
+    dose: document.getElementById('med-dose').value,
+    frequency: document.getElementById('med-freq').value,
+    time: document.getElementById('med-time').value,
+    expiry_date: document.getElementById('med-expiry').value,
+    notes: document.getElementById('med-notes').value
+  };
+  try {
+    const res = await fetch('/api/medications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(med)
+    });
+    const data = await res.json();
+    showAPIMessage(data.message || JSON.stringify(data));
+    if (res.ok) loadMeds();
+  } catch (err) {
+    showAPIMessage('Error agregando medicamento');
+  }
+});
+
+document.getElementById('load-meds-btn').addEventListener('click', loadMeds);
+async function loadMeds() {
+  try {
+    const res = await fetch('/api/medications', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    showResponse('meds-response', data);
+  } catch (err) {
+    showResponse('meds-response', 'Error cargando medicamentos');
+  }
+}
+
+// Recordatorios
+const reminderForm = document.getElementById('reminder-form');
+reminderForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const reminder = {
+    title: document.getElementById('reminder-title').value,
+    description: document.getElementById('reminder-description').value,
+    date: document.getElementById('reminder-date').value,
+    reminder_time: document.getElementById('reminder-time').value
+  };
+  try {
+    const res = await fetch('/api/reminders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(reminder)
+    });
+    const data = await res.json();
+    showAPIMessage(data.message || JSON.stringify(data));
+    if (res.ok) loadReminders();
+  } catch (err) {
+    showAPIMessage('Error agregando recordatorio');
+  }
+});
+
+document.getElementById('load-reminders-btn').addEventListener('click', loadReminders);
+async function loadReminders() {
+  try {
+    const res = await fetch('/api/reminders', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    showResponse('reminders-response', data);
+  } catch (err) {
+    showResponse('reminders-response', 'Error cargando recordatorios');
+  }
+}
+
+// Metas
+const goalForm = document.getElementById('goal-form');
+goalForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const goal = {
+    title: document.getElementById('goal-title').value,
+    description: document.getElementById('goal-description').value,
+    target_date: document.getElementById('goal-deadline').value,
+    priority: document.getElementById('goal-priority').value
+  };
+  try {
+    const res = await fetch('/api/goals', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(goal)
+    });
+    const data = await res.json();
+    showAPIMessage(data.message || JSON.stringify(data));
+    if (res.ok) loadGoals();
+  } catch (err) {
+    showAPIMessage('Error agregando meta');
+  }
+});
+
+document.getElementById('load-goals-btn').addEventListener('click', loadGoals);
+async function loadGoals() {
+  try {
+    const res = await fetch('/api/goals', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    showResponse('goals-response', data);
+  } catch (err) {
+    showResponse('goals-response', 'Error cargando metas');
+  }
+}
+
+// Modo claro/oscuro
+function setTheme(dark) {
+  if (dark) {
+    document.documentElement.classList.add('dark-mode');
+    var btn = document.getElementById('toggle-theme');
+    if (btn) btn.innerHTML = '☀️ Modo Claro';
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark-mode');
+    var btn = document.getElementById('toggle-theme');
+    if (btn) btn.innerHTML = '🌙 Modo Oscuro';
+    localStorage.setItem('theme', 'light');
+  }
+}
+var toggleBtn = document.getElementById('toggle-theme');
+if (toggleBtn) {
+  toggleBtn.addEventListener('click', function() {
+    const isDark = document.documentElement.classList.contains('dark-mode');
+    setTheme(!isDark);
+  });
+} else {
+  console.warn('No se encontró el botón de modo claro/oscuro');
+}
+(function() {
+  const theme = localStorage.getItem('theme');
+  setTheme(theme === 'dark');
+})();
+
+// Chatbot conversacional
+(function() {
+  const fab = document.getElementById('open-chatbot');
+  const windowEl = document.getElementById('chatbot-window');
+  const closeBtn = document.getElementById('close-chatbot');
+  const form = document.getElementById('chatbot-form');
+  const input = document.getElementById('chatbot-input');
+  const messages = document.getElementById('chatbot-messages');
+
+  function addMessage(text, sender) {
+    const msg = document.createElement('div');
+    msg.style.margin = '8px 0';
+    msg.style.textAlign = sender === 'user' ? 'right' : 'left';
+    msg.innerHTML = `<span style="display:inline-block;padding:8px 14px;border-radius:16px;max-width:80%;background:${sender==='user'?'#007bff':'#e9ecef'};color:${sender==='user'?'#fff':'#222'};">${text}</span>`;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function botReply(userText) {
+    const txt = userText.trim().toLowerCase();
+    if (!txt) return '¿En qué puedo ayudarte?';
+    if (txt.includes('medicamento') && txt.includes('agregar')) {
+      return 'Para agregar un medicamento, completa el formulario en la sección "Medicamentos" y haz clic en "Agregar Medicamento".';
+    }
+    if ((txt.includes('marcar') || txt.includes('tomar')) && txt.includes('medicamento')) {
+      return 'Para marcar un medicamento como tomado, busca la opción correspondiente junto al medicamento en la lista.';
+    }
+    if (txt.includes('cerrar sesión') || txt.includes('logout')) {
+      return 'Para cerrar sesión, haz clic en el botón "Cerrar Sesión" en la sección de login.';
+    }
+    if (txt.includes('recordatorio')) {
+      return 'Puedes crear recordatorios en la sección "Recordatorios". Completa el formulario y haz clic en "Agregar Recordatorio".';
+    }
+    if (txt.includes('meta') || txt.includes('objetivo')) {
+      return 'Para agregar una meta, utiliza el formulario en la sección "Metas".';
+    }
+    if (txt.includes('oscuro') || txt.includes('claro') || txt.includes('tema')) {
+      return 'Puedes cambiar entre modo claro y oscuro usando el botón en la esquina superior derecha.';
+    }
+    if (txt.includes('ayuda')) {
+      return 'Soy tu asistente virtual. Pregúntame cómo agregar, marcar o eliminar medicamentos, cómo crear recordatorios, metas, o cómo cambiar el tema.';
+    }
+    if (txt.includes('eliminar') && txt.includes('medicamento')) {
+      return 'Para eliminar un medicamento, haz clic en el botón de eliminar junto al medicamento en la lista.';
+    }
+    if (txt.includes('registrar') || txt.includes('registro')) {
+      return 'Para registrarte, completa el formulario de registro en la parte superior de la página.';
+    }
+    if (txt.includes('login') || txt.includes('iniciar sesión')) {
+      return 'Para iniciar sesión, usa el formulario de login en la parte superior de la página.';
+    }
+    if (txt.includes('contacto') || txt.includes('soporte')) {
+      return 'Por ahora, el soporte es solo virtual. ¡Estoy aquí para ayudarte!';
+    }
+    return 'Lo siento, no tengo información sobre eso. ¿Puedes preguntar de otra manera o ser más específico?';
+  }
+
+  if (fab && windowEl && closeBtn && form && input && messages) {
+    fab.onclick = () => { windowEl.style.display = 'flex'; setTimeout(()=>input.focus(), 200); };
+    closeBtn.onclick = () => { windowEl.style.display = 'none'; };
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      const userText = input.value;
+      if (!userText.trim()) return;
+      addMessage(userText, 'user');
+      input.value = '';
+      setTimeout(() => {
+        const response = botReply(userText);
+        addMessage(response, 'bot');
+      }, 400);
+    };
+    // Mensaje de bienvenida
+    addMessage('¡Hola! Soy tu asistente virtual MediSafe. ¿En qué puedo ayudarte?', 'bot');
+  }
+})();
+</script>
+</body>
+</html> 

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSafe Backend Estructurado - Pruebas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .response-area {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 2px solid #e1e8ed;
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .token-display {
+            background: #34495e;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            margin: 15px 0;
+        }
+
+        .endpoint-info {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        .endpoint-info h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .endpoint-info code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 MediSafe Backend Estructurado</h1>
+            <p>Página de pruebas para el nuevo backend con arquitectura modular</p>
+        </div>
+
+        <div class="content">
+            <!-- Health Check -->
+            <div class="section">
+                <h2>🔍 Health Check</h2>
+                <p>Verifica el estado del servidor backend</p>
+                <button class="btn" onclick="checkHealth()">Verificar Estado del Servidor</button>
+                <div id="health-response" class="response-area" style="display: none;"></div>
+            </div>
+
+            <!-- Autenticación -->
+            <div class="section">
+                <h2>🔐 Autenticación</h2>
+                
+                <div class="grid">
+                    <!-- Registro -->
+                    <div class="card">
+                        <h3>📝 Registro de Usuario</h3>
+                        <form id="registerForm">
+                            <div class="form-group">
+                                <label for="regUsername">Usuario:</label>
+                                <input type="text" id="regUsername" name="username" placeholder="min 3 caracteres" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="regPassword">Contraseña:</label>
+                                <input type="password" id="regPassword" name="password" placeholder="min 6 caracteres" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="regEmail">Email (opcional):</label>
+                                <input type="email" id="regEmail" name="email" placeholder="usuario@ejemplo.com">
+                            </div>
+                            <button type="submit" class="btn btn-success">Registrar Usuario</button>
+                        </form>
+                    </div>
+
+                    <!-- Login -->
+                    <div class="card">
+                        <h3>🔑 Iniciar Sesión</h3>
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="loginUsername">Usuario:</label>
+                                <input type="text" id="loginUsername" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="loginPassword">Contraseña:</label>
+                                <input type="password" id="loginPassword" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">Iniciar Sesión</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Token JWT -->
+                <div id="tokenSection" style="display: none;">
+                    <h3>🎫 Token JWT Actual</h3>
+                    <div id="currentToken" class="token-display"></div>
+                    <button class="btn btn-secondary" onclick="getProfile()">Obtener Perfil</button>
+                    <button class="btn btn-danger" onclick="clearToken()">Limpiar Token</button>
+                </div>
+            </div>
+
+            <!-- Información de la API -->
+            <div class="section">
+                <h2>📚 Información de la API</h2>
+                
+                <div class="endpoint-info">
+                    <h4>Base URL:</h4>
+                    <code>http://localhost:4000/api/v1</code>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <h3>🏥 Health Check</h3>
+                        <p><strong>GET</strong> <code>/health</code></p>
+                        <p>Verifica el estado del servidor</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>👤 Autenticación</h3>
+                        <p><strong>POST</strong> <code>/auth/register</code></p>
+                        <p><strong>POST</strong> <code>/auth/login</code></p>
+                        <p><strong>GET</strong> <code>/auth/profile</code> (protegido)</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>🔒 Seguridad</h3>
+                        <p>• JWT con expiración 24h</p>
+                        <p>• Hash bcrypt (12 salt rounds)</p>
+                        <p>• Validaciones robustas</p>
+                        <p>• Rate limiting</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>🏗️ Arquitectura</h3>
+                        <p>• Controllers (lógica de negocio)</p>
+                        <p>• Middleware (auth, validación)</p>
+                        <p>• Routes (endpoints)</p>
+                        <p>• Config (DB, app)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Respuestas -->
+            <div class="section">
+                <h2>📡 Respuestas de la API</h2>
+                <div id="apiResponses" class="response-area"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:4000/api/v1';
+        let currentToken = localStorage.getItem('medisafe_token') || '';
+
+        // Mostrar token si existe
+        if (currentToken) {
+            showTokenSection(currentToken);
+        }
+
+        // Health Check
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                document.getElementById('health-response').style.display = 'block';
+                document.getElementById('health-response').textContent = 
+                    `✅ Health Check Exitoso\n\nStatus: ${response.status}\nRespuesta:\n${JSON.stringify(data, null, 2)}`;
+                
+                addResponse('Health Check', response.status, data);
+            } catch (error) {
+                document.getElementById('health-response').style.display = 'block';
+                document.getElementById('health-response').textContent = 
+                    `❌ Error en Health Check:\n${error.message}`;
+                
+                addResponse('Health Check', 'ERROR', { error: error.message });
+            }
+        }
+
+        // Registro
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                username: formData.get('username'),
+                password: formData.get('password'),
+                email: formData.get('email') || null
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.token;
+                    localStorage.setItem('medisafe_token', currentToken);
+                    showTokenSection(currentToken);
+                    addResponse('Registro', response.status, data);
+                    e.target.reset();
+                } else {
+                    addResponse('Registro', response.status, data);
+                }
+            } catch (error) {
+                addResponse('Registro', 'ERROR', { error: error.message });
+            }
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const userData = {
+                username: formData.get('username'),
+                password: formData.get('password')
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.token;
+                    localStorage.setItem('medisafe_token', currentToken);
+                    showTokenSection(currentToken);
+                    addResponse('Login', response.status, data);
+                    e.target.reset();
+                } else {
+                    addResponse('Login', response.status, data);
+                }
+            } catch (error) {
+                addResponse('Login', 'ERROR', { error: error.message });
+            }
+        });
+
+        // Obtener Perfil
+        async function getProfile() {
+            if (!currentToken) {
+                addResponse('Perfil', 'ERROR', { error: 'No hay token disponible' });
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                const data = await response.json();
+                addResponse('Perfil', response.status, data);
+            } catch (error) {
+                addResponse('Perfil', 'ERROR', { error: error.message });
+            }
+        }
+
+        // Mostrar sección de token
+        function showTokenSection(token) {
+            document.getElementById('tokenSection').style.display = 'block';
+            document.getElementById('currentToken').textContent = token;
+        }
+
+        // Limpiar token
+        function clearToken() {
+            currentToken = '';
+            localStorage.removeItem('medisafe_token');
+            document.getElementById('tokenSection').style.display = 'none';
+            addResponse('Token', 'INFO', { message: 'Token limpiado correctamente' });
+        }
+
+        // Agregar respuesta a la consola
+        function addResponse(operation, status, data) {
+            const responsesDiv = document.getElementById('apiResponses');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let statusText = status;
+            let statusClass = 'info';
+            
+            if (status === 200 || status === 201) {
+                statusText = '✅ ÉXITO';
+                statusClass = 'success';
+            } else if (status === 'ERROR') {
+                statusText = '❌ ERROR';
+                statusClass = 'error';
+            } else if (status === 'INFO') {
+                statusText = 'ℹ️ INFO';
+                statusClass = 'info';
+            }
+
+            const responseHtml = `
+                <div class="status ${statusClass}">
+                    <strong>${operation}</strong> - ${statusText} (${timestamp})
+                </div>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+                <hr>
+            `;
+            
+            responsesDiv.innerHTML = responseHtml + responsesDiv.innerHTML;
+        }
+
+        // Verificar conexión al cargar la página
+        window.addEventListener('load', () => {
+            addResponse('Página', 'INFO', { 
+                message: 'Página de pruebas cargada',
+                apiBase: API_BASE,
+                timestamp: new Date().toISOString()
+            });
+        });
+    </script>
+</body>
+</html>
+

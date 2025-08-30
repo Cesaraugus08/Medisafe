@@ -1,35 +1,40 @@
 {
-  "name": "medisafe-backend",
+  "name": "medisafe",
   "version": "1.0.0",
-  "description": "Backend API for MediSafe medication management application",
-  "main": "server.js",
+  "description": "Sistema completo de gestión de medicamentos con frontend, backend y aplicación móvil",
+  "main": "backend/src/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "init-db": "node init-database.js",
-    "migrate": "node migrate-localStorage-to-postgresql.js"
-  },
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-rate-limit": "^7.1.5",
-    "helmet": "^7.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "node-fetch": "^3.3.2",
-    "pg": "^8.11.3",
-    "sqlite3": "^5.1.7"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev",
+    "frontend": "cd frontend && start index.html",
+    "mobile": "cd mobile/medisafe-mobile && npm start",
+    "install-all": "npm install && cd backend && npm install && cd ../mobile/medisafe-mobile && npm install",
+    "init-db": "cd backend && npm run init-db",
+    "test": "echo \"Ejecutando pruebas...\" && cd backend && npm test",
+    "clean": "node scripts/clean-users.js",
+    "setup": "npm run install-all && npm run init-db"
   },
   "keywords": [
-    "medication",
-    "healthcare",
-    "postgresql",
-    "api"
+    "medicamentos",
+    "salud",
+    "gestión",
+    "recordatorios",
+    "api",
+    "react-native",
+    "nodejs"
   ],
   "author": "MediSafe Team",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/medisafe.git"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "workspaces": [
+    "backend",
+    "mobile/medisafe-mobile"
+  ]
 }
